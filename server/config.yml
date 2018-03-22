@@ -1,0 +1,30 @@
+global:
+    listen_host: &global_listen_host 0.0.0.0
+    public_host: &global_public_host 0.0.0.0
+    max_connections: &global_max_connections 10
+    enable_all: &enable_all True
+
+servers:
+    auth:
+        listen_port: 2000
+        listen_host: *global_listen_host
+        public_port: 1001
+        public_host: *global_public_host
+        max_connections: *global_max_connections
+        enabled: *enable_all
+
+    chat:
+        listen_port: 2001
+        listen_host: *global_listen_host
+        public_port: 2001
+        public_host: *global_public_host
+        max_connections: *global_max_connections
+        enabled: *enable_all
+
+    char:
+        listen_port: 2002
+        listen_host: *global_listen_host
+        public_port: 2002
+        public_host: *global_public_host
+        max_connections: *global_max_connections
+        enabled: *enable_all
