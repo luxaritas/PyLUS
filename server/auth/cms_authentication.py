@@ -6,20 +6,20 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from cms.game.models import Session
 
-from plugin import Plugin
+from plugin import Plugin, Action
 
 class DjangoAuthentication(Plugin):
     def actions(self):
-        return {
-            'auth:check_credentials': (self.check_credentials, 10),
-            #'auth:check_banned': (self.check_banned, 10),
-            #'auth:check_permission': (self.check_permission, 10),
-            #'auth:check_locked': (self.check_locked, 10),
-            #'auth:check_activated': (self.check_activated, 10),
-            #'auth:check_schedule': (self.check_schedule, 10),
-            'auth:token': (self.get_token, 10),
-            'auth:check_token': (self.check_token, 10),
-        }
+        return [
+            Action('auth:check_credentials', self.check_credentials, 10),
+            #Action('auth:check_banned', self.check_banned, 10),
+            #Action('auth:check_permission', self.check_permission, 10),
+            #Action('auth:check_locked', self.check_locked, 10),
+            #Action('auth:check_activated', self.check_activated, 10),
+            #Action('auth:check_schedule', self.check_schedule, 10),
+            Action('auth:token', self.get_token, 10),
+            Action('auth:check_token', self.check_token, 10),
+        ]
     
     def check_credentials(self, username, password):
         user = authenticate(username=username, password=password)

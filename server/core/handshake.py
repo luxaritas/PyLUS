@@ -1,34 +1,45 @@
-from pyraknet.bitstream import WriteStream, c_uint16, c_uint32
-from plugin import Plugin
+from pyraknet.bitstream import c_uint16, c_uint32
+from plugin import Plugin, Action, Packet
 from structs import LUHeader
 
 class Handshake(Plugin):
     def actions(self):
-        return {
-            'pkt:handshake': (self.handshake, 10)
-        }
+        return [
+            Action('pkt:handshake', self.handshake, 10)
+        ]
     
-    def handshake(self, data, address):
-        game_version = data.read(c_uint32)
-        unknown = data.read(c_uint32)
-        remote_conn_type = data.read(c_uint32)
-        client_pid = data.read(c_uint32)
-        local_port = data.read(c_uint16)
-        local_ip = data.read(bytes, allocated_length=33)
+    def packets(self):
+        return [
+            HandshakePacket
+        ]
+    
+    def handshake(self, packet, address):
+        remote_conn_type = 0x01 if self.server.type == 'auth' else 0x04
+        self.server.rnserver.send(HandshakePacket(remote_conn_type), address)
         
-        res = WriteStream()
-        # Packet
-        res.write(LUHeader('handshake'))
-        # Version
-        res.write(c_uint32(171022))
-        # Unknown
-        res.write(c_uint32(0x93))
-        # Remote connection type
-        res.write(c_uint32(0x01 if self.server.type == 'auth' else 0x04))
-        # Process ID (we won't expose this)
-        res.write(c_uint32(0))
-        # Local port
-        res.write(c_uint16(0xff))
-        # Local IP
-        res.write(b'127.0.0.1', allocated_length=33)
-        self.server.rnserver.send(res, address)
+class HandshakePacket(Packet):
+    packet_name = 'handshake'
+    
+    def __init__(self, remote_conn_type, game_version=171022, unknown=0x93, process_id=0, local_port=0xff, local_ip=b'127.0.0.1'):
+        super().__init__(**{k:v for k,v in locals().items() if k != 'self'})
+    
+    def serialize(self, stream):
+        super().serialize(stream)
+        stream.write(c_uint32(self.game_version))
+        stream.write(c_uint32(self.unknown))
+        stream.write(c_uint32(self.remote_conn_type))
+        stream.write(c_uint32(self.process_id))
+        stream.write(self.local_ip, allocated_length=33)
+        
+    @classmethod
+    def deserialize(cls, stream):
+        return cls(
+            game_version = stream.read(c_uint32),
+            unknown = stream.read(c_uint32),
+            remote_conn_type = stream.read(c_uint32),
+            process_id = stream.read(c_uint32),
+            local_port = stream.read(c_uint16),
+            local_ip = stream.read(bytes, allocated_length=33)
+        )
+        
+        

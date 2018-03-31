@@ -28,3 +28,11 @@ servers:
         public_host: *global_public_host
         max_connections: *global_max_connections
         enabled: *enable_all
+
+    venture_explorer:
+        listen_port: 2003
+        listen_host: *global_listen_host
+        public_port: 2003
+        public_host: *global_public_host
+        max_connections: *global_max_connections
+        enabled: *enable_all

@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, inspect
 pylus_path = os.path.abspath("..")
 sys.path.append(pylus_path)
 
@@ -36,23 +36,29 @@ class Server:
         self.type = server_type
         self.plugins = []
         self.handlers = {}
+        self.packets = {}
         
         self.register_plugins('core')
-        self.register_plugins(self.type if self.type in ['auth', 'char'] else 'world')
+        self.register_plugins(self.type if self.type in ['auth', 'char', 'chat'] else 'world')
 
     def register_plugins(self, package):
         new_plugins = [UserPlugin(self) for UserPlugin in get_plugins(package)]
         self.plugins += new_plugins
 
         for plugin in new_plugins:
-            for event, (handler, priority) in plugin.actions().items():
+            for (event, handler, priority) in plugin.actions():
                 self.handlers.setdefault(event, []).append((handler, priority))
+            for packet in plugin.packets():
+                existing = self.packets.get(packet.packet_name)
+                if existing is not None:
+                    raise ArgumentError('Multiple packets cannot be registered for the same packet name. {} is already registered'.format(inspect.getmodule(existing)))
+                self.packets[packet.packet_name] = packet
 
         for plugin in new_plugins:       
             log.info('{} - Registered plugin: {} consuming {}'.format(
                       self.type.upper(),
                       plugin.__module__,
-                      list(plugin.actions().keys()))
+                      [action.event for action in plugin.actions()])
                     )
         
     def get_ordered_handlers(self, event):

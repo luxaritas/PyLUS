@@ -1,24 +1,22 @@
 import logging
 from pyraknet.bitstream import c_uint8, c_uint16, c_uint32, ReadStream
-from plugin import Plugin
+from plugin import Plugin, Action, Packet
 from structs import LUHeader
 
 log = logging.getLogger(__name__)
 
 class PacketRouter(Plugin):
     def actions(self):
-        return {
-            'rn:user_packet': (self.on_packet, 10)
-        }
+        return [
+            Action('rn:user_packet', self.on_packet, 10)
+        ]
     
     def on_packet(self, data, address):
-        stream = ReadStream(data)
-        header = LUHeader.deserialize(stream)
-        packet = stream.read_remaining()
+        packet = Packet.deserialize(ReadStream(data), self.server.packets)
         
-        if header.packet_name == None:
-            self.server.handle('lu:unknown_packet', header.remote_conn_type, header.packet_id, ReadStream(packet))
+        if getattr(packet.header,'packet_name', None) is None:
+            self.server.handle('pkt:unknown_packet', packet)
         else:
-            log.debug('Recieved LU Packet {}'.format(header.packet_name))
-            self.server.handle('pkt:' + header.packet_name, ReadStream(packet), address)
+            log.debug('[{}] Recieved LU Packet {}'.format(self.server.type, packet.header.packet_name))
+            self.server.handle('pkt:' + packet.header.packet_name, packet, address)
             

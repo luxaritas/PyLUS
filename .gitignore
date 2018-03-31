@@ -61,3 +61,6 @@ target/
 
 # Custom config
 server/config.yml
+
+# Pyaknet packet logs
+logs/

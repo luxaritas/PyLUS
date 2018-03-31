@@ -1,4 +1,4 @@
-hg+https://bitbucket.org/lcdr/pyraknet@b212a18
+hg+https://bitbucket.org/lcdr/pyraknet@dabb9d0 
 pyyaml==3.12
 django==2.0.3
 bcrypt==3.1.4
