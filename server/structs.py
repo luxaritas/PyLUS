@@ -25,11 +25,11 @@ class CString(Serializable):
         self.length_type = length_type
 
     def serialize(self, stream):
-        stream.write(self.data if isinstance(self.data, bytes) else bytes(self.data, 'ascii'),
+        stream.write(self.data if isinstance(self.data, bytes) else bytes(self.data, 'latin1'),
                      allocated_length=self.allocated_length, length_type=self.length_type)
 
     def deserialize(self, stream):
-        return stream.read(bytes, allocated_length=self.allocated_length, length_type=self.length_type).decode('ascii')
+        return stream.read(bytes, allocated_length=self.allocated_length, length_type=self.length_type).decode('latin1')
 
 class Character(Serializable):
     def __init__(self, character_id, unknown1, character_name, character_unapproved_name, is_name_rejected, free_to_play,
