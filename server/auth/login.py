@@ -5,16 +5,16 @@ from structs import LUHeader, CString, GameVersion
 class Login(Plugin):
     def actions(self):
         return [
-            Action('pkt:login_request', self.login, 10)
+            Action('pkt:login_request', self.login_request, 10)
         ]
-    
+
     def packets(self):
         return [
             LoginRequest,
             LoginResponse
         ]
-    
-    def login(self, packet, address):
+
+    def login_request(self, packet, address):
         if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password):
             auth_status = 'bad_credentials'
         elif self.server.handle_until_value('auth:check_banned', True, packet.username, address):
@@ -32,24 +32,26 @@ class Login(Plugin):
             auth_status = 'schedule_blocked'
         else:
             auth_status = 'success'
-        
+
         if auth_status is 'success':
             token = self.server.handle_until_return('auth:token', packet.username)
         else:
             token = ''
-        
+
+        self.server.handle_until_value('auth:set_address', packet.username, address)
+
         permission_error = 'You do not have permission to log in to this server' if auth_status is 'not_permitted' else ''
-        
+
         char_ip = self.server.config['servers']['char']['public_host']
         chat_ip = self.server.config['servers']['chat']['public_host']
         char_port = self.server.config['servers']['char']['public_port']
         chat_port = self.server.config['servers']['chat']['public_port']
-        
-        new_subscriber = self.server.handle_until_value('user:new_subscriber', True, packet.username)
-        ftp = new_subscriber = self.server.handle_until_value('user:free_to_play', True, packet.username)
-        
+
+        new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, packet.username)
+        ftp = self.server.handle_until_value('auth:free_to_play', True, packet.username)
+
         res = LoginResponse(auth_status, token, char_ip, chat_ip, char_port, chat_port, new_subscriber, ftp, permission_error)
-        
+
         self.server.rnserver.send(res, address)
 
 class LoginRequest(Packet):
@@ -75,18 +77,18 @@ class LoginRequest(Packet):
             os_build_number = stream.read(c_uint32),
             os_platform_id = stream.read(c_uint32)
         )
-    
+
 class LoginResponse(Packet):
     packet_name = 'login_response'
     allow_without_session = True
-    
+
     def __init__(self, auth_status, auth_token, char_ip, chat_ip, char_port, chat_port, new_subscriber, is_ftp, permission_error,
                  client_version=GameVersion(1, 10, 64), localization='US',
                  unknown='Talk_Like_A_Pirate', unknown1='', unknown2='0', unknown3='00000000-0000-0000-0000-000000000000',
                  unknown4=0, unknown5=0
                 ):
         super().__init__(**{k:v for k,v in locals().items() if k != 'self'})
-    
+
     @property
     def auth_status_code(self):
         return {
@@ -98,7 +100,7 @@ class LoginResponse(Packet):
             'schedule_blocked': 0x0d,
             'not_activated': 0x0e,
         }.get(self.auth_status)
-    
+
     def serialize(self, stream):
         super().serialize(stream)
         stream.write(c_uint8(self.auth_status_code))
