@@ -1,6 +1,6 @@
 from pyraknet.bitstream import c_uint8, c_uint16, c_uint32, c_uint64, c_bool
 from plugin import Plugin, Action, Packet
-from structs import LUHeader, CString, GameVersion
+from structs import LUHeader, CString
 
 class Login(Plugin):
     def actions(self):
@@ -53,6 +53,21 @@ class Login(Plugin):
         res = LoginResponse(auth_status, token, char_ip, chat_ip, char_port, chat_port, new_subscriber, ftp, permission_error)
 
         self.server.rnserver.send(res, address)
+
+class GameVersion(Serializable):
+    def __init__(self, major, current, minor):
+        self.major = major
+        self.current = current
+        self.minor = minor
+
+    def serialize(self, stream):
+        stream.write(c_uint16(self.major))
+        stream.write(c_uint16(self.current))
+        stream.write(c_uint16(self.minor))
+
+    @classmethod
+    def deserialize(cls, stream):
+        return cls(stream.read(c_uint16), stream.read(c_uint16), stream.read(c_uint16))
 
 class LoginRequest(Packet):
     packet_name = 'login_request'
