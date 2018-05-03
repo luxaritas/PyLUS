@@ -17,6 +17,6 @@ class PacketRouter(Plugin):
         if getattr(packet.header,'packet_name', None) is None:
             self.server.handle('pkt:unknown_packet', packet)
         else:
-            log.debug('[{}] Recieved LU Packet {}'.format(self.server.type, packet.header.packet_name))
-            self.server.handle('pkt:' + packet.header.packet_name, packet, address)
+            log.debug(f'[{self.server.type}] Recieved LU Packet {packet.header.packet_name}'
+            self.server.handle(f'pkt:{packet.header.packet_name}', packet, address)
             
