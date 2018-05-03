@@ -15,8 +15,8 @@ class CharacterList(Plugin):
         ]
 
     def character_list_request(self, packet, address):
-        username = self.server.handle_until_value('auth:get_username', True, address)
-        characters = self.server.handle_until_value('char:characters', True, username)
+        uid = self.server.connections[address]['uid']
+        characters = self.server.handle_until_value('char:characters', True, uid)
         serializable_characters = []
 
         for character in characters:
@@ -65,7 +65,7 @@ class CharacterListResponse(Packet):
 
     def serialize(self, stream):
         super().serialize(stream)
-        front_char = self.server.handle_until_value('user:front_char', True, self.characters[0].user_id)
+        front_char = self.server.handle_until_value('char:front_char_index', True, self.characters[0].user_id)
         stream.write(c_uint8(front_char))
         stream.write(len(self.characters))
         for character in self.characters:

@@ -17,38 +17,45 @@ class Login(Plugin):
     def login_request(self, packet, address):
         if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password):
             auth_status = 'bad_credentials'
-        elif self.server.handle_until_value('auth:check_banned', True, packet.username, address):
-            auth_status = 'banned'
-        elif self.server.handle_until_value('auth:check_permission', False, 'login', packet.username):
-            auth_status = 'not_permitted'
-        elif self.server.handle_until_value('auth:check_locked', True, packet.username):
-            # User has failed entering their password too many times
-            auth_status = 'locked'
-        elif self.server.handle_until_value('auth:check_activated', False, packet.username):
-            # User needs to take some step to activate their account (ex, confirm email)
-            auth_status = 'not_activated'
-        elif self.server.handle_until_value('auth:check_schedule', False, packet.username):
-            # Schedule set up by parent for time allowed to play does not allow play at this time
-            auth_status = 'schedule_blocked'
+            uid = None
         else:
-            auth_status = 'success'
+            uid = self.server.connections('auth:get_user_id', True, address)
+            
+            if self.server.handle_until_value('auth:check_banned', True, uid, address):
+                auth_status = 'banned'
+            elif self.server.handle_until_value('auth:check_permission', False, 'login', uid):
+                auth_status = 'not_permitted'
+            elif self.server.handle_until_value('auth:check_locked', True, uid):
+                # User has failed entering their password too many times
+                auth_status = 'locked'
+            elif self.server.handle_until_value('auth:check_activated', False, uid):
+                # User needs to take some step to activate their account (ex, confirm email)
+                auth_status = 'not_activated'
+            elif self.server.handle_until_value('auth:check_schedule', False, uid):
+                # Schedule set up by parent for time allowed to play does not allow play at this time
+                auth_status = 'schedule_blocked'
+            else:
+                auth_status = 'success'
 
-        if auth_status is 'success':
-            token = self.server.handle_until_return('auth:token', packet.username)
-        else:
-            token = ''
-
-        self.server.handle_until_value('auth:set_address', packet.username, address)
+            if auth_status is 'success':
+                token = self.server.handle_until_return('auth:token', uid)
+            else:
+                token = ''
 
         permission_error = 'You do not have permission to log in to this server' if auth_status is 'not_permitted' else ''
 
+        if uid is not None:
+            self.server.handle_until_value('auth:set_address', uid, address)
+            new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, uid)
+            ftp = self.server.handle_until_value('auth:free_to_play', True, uid)
+        else:
+            new_subscriber = False
+            ftp = False
+        
         char_ip = self.server.config['servers']['char']['public_host']
         chat_ip = self.server.config['servers']['chat']['public_host']
         char_port = self.server.config['servers']['char']['public_port']
         chat_port = self.server.config['servers']['chat']['public_port']
-
-        new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, packet.username)
-        ftp = self.server.handle_until_value('auth:free_to_play', True, packet.username)
 
         res = LoginResponse(auth_status, token, char_ip, chat_ip, char_port, chat_port, new_subscriber, ftp, permission_error)
 
