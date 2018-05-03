@@ -3,21 +3,6 @@ from abc import ABCMeta
 from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32
 from enums import PACKET_IDS, PACKET_NAMES
 
-class GameVersion(Serializable):
-    def __init__(self, major, current, minor):
-        self.major = major
-        self.current = current
-        self.minor = minor
-
-    def serialize(self, stream):
-        stream.write(c_uint16(self.major))
-        stream.write(c_uint16(self.current))
-        stream.write(c_uint16(self.minor))
-
-    @classmethod
-    def deserialize(cls, stream):
-        return cls(stream.read(c_uint16), stream.read(c_uint16), stream.read(c_uint16))
-
 class CString(Serializable):
     def __init__(self, data, allocated_length=None, length_type=None):
         self.data = data
