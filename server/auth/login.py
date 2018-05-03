@@ -54,6 +54,7 @@ class Login(Plugin):
 
 class LoginRequest(Packet):
     packet_name = 'login_request'
+    allow_without_session = True
         
     @classmethod
     def deserialize(cls, stream):
@@ -77,6 +78,7 @@ class LoginRequest(Packet):
     
 class LoginResponse(Packet):
     packet_name = 'login_response'
+    allow_without_session = True
     
     def __init__(self, auth_status, auth_token, char_ip, chat_ip, char_port, chat_port, new_subscriber, is_ftp, permission_error,
                  client_version=GameVersion(1, 10, 64), localization='US',
