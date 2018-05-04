@@ -48,6 +48,7 @@ class Server:
         self.config = config
         self.type = server_type
         self.plugins = []
+        self.connections = []
         self.handlers = {}
         self.packets = {}
 
