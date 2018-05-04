@@ -1,9 +1,42 @@
-from typing import overload, NamedTuple
-from abc import ABCMeta
+"""
+Structs
+"""
+
+from typing import overload
+
 from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32
 from enums import PACKET_IDS, PACKET_NAMES
 
+
+class GameVersion(Serializable):
+    """
+    Game version serializable
+    """
+    def __init__(self, major, current, minor):
+        self.major = major
+        self.current = current
+        self.minor = minor
+
+    def serialize(self, stream):
+        """
+        Serializes the game version
+        """
+        stream.write(c_uint16(self.major))
+        stream.write(c_uint16(self.current))
+        stream.write(c_uint16(self.minor))
+
+    @classmethod
+    def deserialize(cls, stream):
+        """
+        Deserializes the game version
+        """
+        return cls(stream.read(c_uint16), stream.read(c_uint16), stream.read(c_uint16))
+
+
 class CString(Serializable):
+    """
+    C string serializable
+    """
     def __init__(self, data, allocated_length=None, length_type=None):
         self.data = data
         self.allocated_length = allocated_length
@@ -18,6 +51,9 @@ class CString(Serializable):
 
 
 class LUHeader(Serializable):
+    """
+    LEGO Universe header serializable
+    """
     @overload
     def __init__(self, packet_name: str):
         pass
@@ -29,19 +65,24 @@ class LUHeader(Serializable):
     def __init__(self, *args):
         if isinstance(args[0], str):
             self.packet_name = args[0]
-
         else:
             self.raw_ids = (args[0], args[1])
 
     @property
     def remote_conn_id(self):
-        if getattr(self, 'packet_name', None) is not None:
+        """
+        Returns the remote connection ID
+        """
+        if getattr(self, 'packet_name', None):
             return PACKET_IDS[self.packet_name][0]
         return self.raw_ids[0]
 
     @property
     def packet_id(self):
-        if getattr(self, 'packet_name', None) is not None:
+        """
+        Returns the packet ID
+        """
+        if getattr(self, 'packet_name', None):
             return PACKET_IDS[self.packet_name][1]
         return self.raw_ids[1]
 
@@ -53,14 +94,14 @@ class LUHeader(Serializable):
 
     @classmethod
     def deserialize(cls, stream):
-        rntype = stream.read(c_uint8)
+        stream.read(c_uint8)  # rntype
         remote_conn_id = stream.read(c_uint16)
         packet_id = stream.read(c_uint32)
-        unknown = stream.read(c_uint8)
+        stream.read(c_uint8)  # unknown
 
         packet_name = PACKET_NAMES.get(remote_conn_id, {}).get(packet_id, None)
 
-        if packet_name is not None:
+        if packet_name:
             return cls(packet_name)
 
         return cls(remote_conn_id, packet_id)
