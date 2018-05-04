@@ -15,12 +15,10 @@ class Packet(Serializable):
     """
     Packet class
     """
-    @overload
-    def __init__(self):
-        pass
+    allow_without_session = False
 
     @overload
-    def __init__(self, header: LUHeader = None, data: bytes = None):
+    def __init__(self):
         pass
 
     def __init__(self, header: LUHeader = None, data: bytes = None, **kwargs):
@@ -30,14 +28,11 @@ class Packet(Serializable):
             self.header = LUHeader(packet_name)
             for prop, val in kwargs.items():
                 setattr(self, prop, val)
-
-        elif header and data:
+        elif header and data != None:
             self.header = header
             self.data = data
-
         else:
-            raise KeyError('Packets must either be instantiated from a base class with a packet_name,' \
-                           'Packet.deserialize(), or with a header and data argument')
+            raise KeyError('Packets must either be instantiated from a base class with a packet_name, Packet.deserialize(), or with a header and data argument')
 
     def __bytes__(self):
         stream = WriteStream()
