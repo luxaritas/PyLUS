@@ -17,7 +17,7 @@ class CharacterList(Plugin):
         Returns all actions
         """
         return [
-            Action('pkt:client_character_list_request', self.character_list_request, 10)
+            Action('pkt:character_list_request', self.character_list_request, 10)
         ]
 
     def packets(self):
@@ -33,8 +33,12 @@ class CharacterList(Plugin):
         """
         Handles a char list request
         """
-        uid = self.server.connections[address]['uid']
-        characters = self.server.handle_until_value('char:characters', True, uid)
+        # TODO: add user to db and uncomment
+        # uid = self.server.connections[address]['uid']
+        uid = 1
+        # TODO: see above
+        # characters = self.server.handle_until_value('char:characters', True, uid)
+        characters = []
         serializable_characters = []
 
         for character in characters:
@@ -73,7 +77,7 @@ class ClientCharacterListRequest(Packet):
     """
     Client character list request packet
     """
-    packet_name = 'client_character_list_request'
+    packet_name = 'character_list_request'
 
     @classmethod
     def deserialize(cls, stream):
@@ -97,9 +101,11 @@ class CharacterListResponse(Packet):
         Serializes the packet
         """
         super().serialize(stream)
-        front_char = self.server.handle_until_value('char:front_char_index', True, self.characters[0].user_id)
+        # TODO: see TODO above
+        # front_char = self.server.handle_until_value('char:front_char_index', True, self.characters[0].user_id)
+        front_char = 0
+        stream.write(c_uint8(len(self.characters)))
         stream.write(c_uint8(front_char))
-        stream.write(len(self.characters))
         for character in self.characters:
             character.serialize(stream)
 
