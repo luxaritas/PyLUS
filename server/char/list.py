@@ -33,42 +33,44 @@ class CharacterList(Plugin):
         """
         Handles a char list request
         """
-        # TODO: add user to db and uncomment
+        # TODO: find a solution for the connections problem
         # uid = self.server.connections[address]['uid']
+
         uid = 1
-        # TODO: see above
-        # characters = self.server.handle_until_value('char:characters', True, uid)
-        characters = []
+
+        front_char = self.server.handle_until_return('char:front_char_index', uid)
+        characters = self.server.handle_until_return('char:characters', uid)
+
         serializable_characters = []
 
         for character in characters:
-            serializable_character = Character()
-            serializable_character.character_id = character.account.session.objid
-            serializable_character.unknown1 = 0
-            serializable_character.character_name = character.name
-            serializable_character.character_unapproved_name = character.unapproved_name
-            serializable_character.is_name_rejected = character.is_name_rejected
-            serializable_character.free_to_play = character.account.free_to_play
-            serializable_character.unknown2 = 0
-            serializable_character.shirt_color = character.shirt_color
-            serializable_character.shirt_style = character.shirt_style
-            serializable_character.pants_color = character.pants_color
-            serializable_character.hair_style = character.hair_style
-            serializable_character.hair_color = character.hair_color
-            serializable_character.lh = character.lh
-            serializable_character.rh = character.rh
-            serializable_character.eyebrows = character.eyebrows
-            serializable_character.eyes = character.eyes
-            serializable_character.mouth = character.mouth
-            serializable_character.unknown3 = 0
-            serializable_character.last_zone = character.last_zone
-            serializable_character.last_instance = character.last_instance
-            serializable_character.last_clone = character.last_clone
-            serializable_character.last_login = character.last_login
-            serializable_character.items = []
+            serializable_character = Character(character_id=character.account.session.objid,
+                                               unknown1=0,
+                                               character_name=character.name,
+                                               character_unapproved_name=character.unapproved_name,
+                                               is_name_rejected=character.is_name_rejected,
+                                               free_to_play=character.account.free_to_play,
+                                               unknown2=0,
+                                               shirt_color=character.shirt_color,
+                                               shirt_style=character.shirt_style,
+                                               pants_color=character.pants_color,
+                                               hair_style=character.hair_style,
+                                               hair_color=character.hair_color,
+                                               lh=character.lh,
+                                               rh=character.rh,
+                                               eyebrows=character.eyebrows,
+                                               eyes=character.eyes,
+                                               mouth=character.mouth,
+                                               unknown3=0,
+                                               last_zone=character.last_zone,
+                                               last_instance=character.last_instance,
+                                               last_clone=character.last_clone,
+                                               last_login=character.last_login,
+                                               items=[])
+
             serializable_characters.append(serializable_character)
 
-        res = CharacterListResponse(serializable_characters)
+        res = CharacterListResponse(serializable_characters, 0 if len(characters) == 0 else 1)
 
         self.server.rnserver.send(res, address)
 
@@ -93,7 +95,7 @@ class CharacterListResponse(Packet):
     """
     packet_name = 'character_list_response'
 
-    def __init__(self, characters):
+    def __init__(self, characters, front_char):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
@@ -101,11 +103,11 @@ class CharacterListResponse(Packet):
         Serializes the packet
         """
         super().serialize(stream)
-        # TODO: see TODO above
-        # front_char = self.server.handle_until_value('char:front_char_index', True, self.characters[0].user_id)
-        front_char = 0
+
+        print(len(self.characters))
+
         stream.write(c_uint8(len(self.characters)))
-        stream.write(c_uint8(front_char))
+        stream.write(c_uint8(self.front_char))
         for character in self.characters:
             character.serialize(stream)
 
@@ -148,11 +150,11 @@ class Character(Serializable):
         """
         stream.write(c_int64(self.character_id))
         stream.write(c_uint32(self.unknown1))
-        stream.write(self.character_name)
-        stream.write(self.character_unapproved_name)
-        stream.write(self.is_name_rejected)
-        stream.write(self.free_to_play)
-        stream.write(self.unknown2, allocated_length=10)
+        stream.write(CString(self.character_name, allocated_length=66))
+        stream.write(CString(self.character_unapproved_name, allocated_length=66))
+        stream.write(c_bool(self.is_name_rejected))
+        stream.write(c_bool(self.free_to_play))
+        stream.write(b'', allocated_length=10)
         stream.write(c_uint32(self.shirt_color))
         stream.write(c_uint32(self.shirt_style))
         stream.write(c_uint32(self.pants_color))

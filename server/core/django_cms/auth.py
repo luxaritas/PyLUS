@@ -7,7 +7,6 @@ import secrets
 from datetime import datetime, timedelta
 
 import bcrypt
-
 from django.contrib.auth import authenticate
 
 from cms.game.models import Session, Account
@@ -36,7 +35,43 @@ class DjangoAuthentication(Plugin):
             Action('auth:new_subscriber', self.get_new_subscriber, 10),
             Action('auth:free_to_play', self.get_lego_club, 10),
             Action('auth:lego_club', self.get_lego_club, 10),
+            Action('auth:create_game_account', self.create_game_account, 10),
+            Action('auth:get_game_account', self.get_game_account, 10),
         ]
+
+    def create_game_account(self, username, password, address, lego_club=False):
+        """
+        Creates a game account for a user
+        """
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            return None
+
+        token = secrets.token_urlsafe(24).encode('UTF-8')
+
+        session = Session.objects.create(token=bcrypt.hashpw(token, bcrypt.gensalt()).decode(),
+                                         address=address[0],
+                                         port=address[1],
+                                         objid=0)
+
+        account = Account.objects.create(user=user,
+                                         session=session,
+                                         lego_club=lego_club,
+                                         free_to_play=False,
+                                         new_subscriber=True,
+                                         front_character=0)
+
+        return account
+
+    def get_game_account(self, uid):
+        """
+        Returns a game account linked to a user
+        """
+        try:
+            return Account.objects.get(user__id=uid)
+        except:  # TODO: find out where the DoesNotExist exception comes from
+            return None
 
     def check_credentials(self, username, password):
         """
@@ -44,7 +79,7 @@ class DjangoAuthentication(Plugin):
         """
         user = authenticate(username=username, password=password)
 
-        return True if user else False
+        return user != None
 
     def get_new_token(self, uid):
         """
@@ -52,16 +87,17 @@ class DjangoAuthentication(Plugin):
         """
         account = Account.objects.get(user__pk=uid)
         token = secrets.token_urlsafe(24)
-        hashed = bcrypt.hashpw(token.encode('utf-8'), bcrypt.gensalt())
-        account.session.token = hashed
+
+        hashed = bcrypt.hashpw(token.encode('UTF-8'), bcrypt.gensalt())
+        account.session.token = hashed.decode()
         account.save()
         return token
 
-    def check_token(self, uid, token):
+    def check_token(self, username, token):
         """
         Checks a token
         """
-        account = Account.objects.get(user__uid=uid)
+        account = Account.objects.get(user__username=username)
         session = account.session
 
         # Session expired
@@ -69,7 +105,7 @@ class DjangoAuthentication(Plugin):
             session.delete()
             return False
 
-        if bcrypt.checkpw(token, session.token):
+        if bcrypt.checkpw(token.encode(), session.token.encode()):
             return True
 
         return False
@@ -79,7 +115,8 @@ class DjangoAuthentication(Plugin):
         Sets a session address
         """
         account = Account.objects.get(user__pk=uid)
-        account.session.address = address
+        account.session.address = address[0]
+        account.session.port = address[1]
         account.save()
 
     def get_address(self, uid):
@@ -93,7 +130,7 @@ class DjangoAuthentication(Plugin):
         """
         Returns a session user ID
         """
-        account = Account.objects.get(session__address=address)
+        account = Account.objects.get(session__address=address[0], session__port=address[1])
         return account.user.pk
 
     def get_lego_club(self, uid):

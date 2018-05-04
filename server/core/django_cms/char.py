@@ -30,8 +30,7 @@ class DjangoCharacterList(Plugin):
         """
         Returns all characters for a user
         """
-        characters = Character.objects.get(account__user__pk=uid)
-        return characters
+        return Character.objects.all()
 
     def get_front_character(self, uid):
         """

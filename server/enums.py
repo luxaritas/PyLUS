@@ -20,11 +20,13 @@ PACKET_NAMES = {
     0x04: {
         0x01: 'session_info',
         0x02: 'character_list_request',
+        0x03: 'minifig_create_request',
     },
     # Server
     0x05: {
         0x00: 'login_response',
         0x06: 'character_list_response',
+        0x07: 'minifig_create_response',
     }
 }
 
