@@ -32,6 +32,8 @@ class Login(Plugin):
         """
         Handles a login request
         """
+        token = ''
+
         if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password):
             auth_status = 'bad_credentials'
             uid = None
@@ -56,8 +58,6 @@ class Login(Plugin):
 
             if auth_status == 'success':
                 token = self.server.handle_until_return('auth:token', uid)
-            else:
-                token = ''
 
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
 
