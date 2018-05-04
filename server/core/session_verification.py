@@ -30,6 +30,7 @@ class SessionVerification(Plugin):
         
 
 class SessionInfo(Packet):
+    allow_without_session=True
     @classmethod
     def deserialize(cls, stream):
         return cls(
