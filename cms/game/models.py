@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 class Session(models.Model):
     token = models.CharField(max_length=32)
     created = models.DateTimeField(auto_now=True)
-    address = models.IntegerField()
+    address = models.GenericIPAddressField()
+    port = models.IntegerField()
     objid = models.BigIntegerField()
 
 class Account(models.Model):

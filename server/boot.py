@@ -48,11 +48,12 @@ class Server:
         self.config = config
         self.type = server_type
         self.plugins = []
-        self.connections = []
         self.handlers = {}
         self.packets = {}
+        self.connections = {}
 
         self.register_plugins('core')
+        self.register_plugins('core.django_cms')
         self.register_plugins(self.type if self.type in ['auth', 'char', 'chat'] else 'world')
 
     def register_plugins(self, package: str):
@@ -126,6 +127,10 @@ class Server:
                 return result
 
         return None
+
+    def add_connection(self, address, uid):
+        self.connections[address] = {'uid': uid}
+
 
 if __name__ == '__main__':
     try:

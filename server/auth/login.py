@@ -2,7 +2,9 @@
 Login plugin
 """
 
+from django.contrib.auth import authenticate
 from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+
 from plugin import Plugin, Action, Packet
 from structs import LUHeader, CString
 
@@ -38,7 +40,16 @@ class Login(Plugin):
             auth_status = 'bad_credentials'
             uid = None
         else:
-            uid = self.server.handle_until_value('auth:get_user_id', True, address)
+            user = authenticate(username=packet.username, password=packet.password)
+
+            uid = user.id
+
+            account = self.server.handle_until_return('auth:get_game_account', uid)
+
+            if not account:
+                account = self.server.handle_until_value('auth:create_game_account', True, packet.username, packet.password, address)
+
+            # uid = self.server.handle_until_return('auth:get_user_id', True, address)
 
             if self.server.handle_until_value('auth:check_banned', True, uid, address):
                 auth_status = 'banned'
@@ -62,9 +73,9 @@ class Login(Plugin):
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
 
         if uid:
-            self.server.handle_until_value('auth:set_address', uid, address)
-            new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, uid)
-            ftp = self.server.handle_until_value('auth:free_to_play', True, uid)
+            self.server.handle_until_value('auth:set_address', True, uid, address)
+            new_subscriber = self.server.handle_until_return('auth:new_subscriber', uid)
+            ftp = self.server.handle_until_return('auth:free_to_play', uid)
         else:
             new_subscriber = False
             ftp = False
