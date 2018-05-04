@@ -2,9 +2,9 @@
 Login plugin
 """
 
-from pyraknet.bitstream import c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
 from plugin import Plugin, Action, Packet
-from structs import LUHeader, CString, GameVersion
+from structs import LUHeader, CString
 
 
 class Login(Plugin):
@@ -106,6 +106,32 @@ class LoginRequest(Packet):
                    os_minor_version=stream.read(c_uint32),
                    os_build_number=stream.read(c_uint32),
                    os_platform_id=stream.read(c_uint32))
+
+
+class GameVersion(Serializable):
+    """
+    Game version serializable
+    """
+    def __init__(self, major, current, minor):
+        self.major = major
+        self.current = current
+        self.minor = minor
+
+    def serialize(self, stream):
+        """
+        Serializes the game version
+        """
+        stream.write(c_uint16(self.major))
+        stream.write(c_uint16(self.current))
+        stream.write(c_uint16(self.minor))
+
+    @classmethod
+    def deserialize(cls, stream):
+        """
+        Deserializes the game version
+        """
+        return cls(stream.read(c_uint16), stream.read(c_uint16), stream.read(c_uint16))
+
 
 class LoginResponse(Packet):
     """
