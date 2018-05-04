@@ -8,31 +8,6 @@ from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32
 from enums import PACKET_IDS, PACKET_NAMES
 
 
-class GameVersion(Serializable):
-    """
-    Game version serializable
-    """
-    def __init__(self, major, current, minor):
-        self.major = major
-        self.current = current
-        self.minor = minor
-
-    def serialize(self, stream):
-        """
-        Serializes the game version
-        """
-        stream.write(c_uint16(self.major))
-        stream.write(c_uint16(self.current))
-        stream.write(c_uint16(self.minor))
-
-    @classmethod
-    def deserialize(cls, stream):
-        """
-        Deserializes the game version
-        """
-        return cls(stream.read(c_uint16), stream.read(c_uint16), stream.read(c_uint16))
-
-
 class CString(Serializable):
     """
     C string serializable
