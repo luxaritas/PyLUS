@@ -1,3 +1,7 @@
+"""
+Enums
+"""
+
 PACKET_NAMES = {
     # General
     0x00: {
@@ -14,7 +18,7 @@ PACKET_NAMES = {
     },
     # Client World/Char
     0x04: {
-        0x01: 'session_info'
+        0x01: 'session_info',
         0x02: 'character_list_request',
     },
     # Server
@@ -24,4 +28,4 @@ PACKET_NAMES = {
     }
 }
 
-PACKET_IDS = {name:(type,id) for type, types in PACKET_NAMES.items() for id,name in types.items()}
+PACKET_IDS = {name: (p_type, id) for p_type, types in PACKET_NAMES.items() for id, name in types.items()}
