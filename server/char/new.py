@@ -4,7 +4,6 @@ Create character
 
 from pyraknet.bitstream import Serializable, c_uint32, c_uint8
 
-from cms.game.models import Character
 from char.list import CharacterListResponse, Character as Minifigure
 from plugin import Plugin, Action, Packet
 from structs import CString
@@ -39,37 +38,36 @@ class CreateCharacter(Plugin):
 
         characters = self.server.handle_until_return('char:characters', uid)
 
-        if len(characters) >= 4:
-            status = 0x01
+        # NOTE: shouldn't we check if len(characters) >= 4?
 
-        account = self.server.handle_until_return('auth:get_game_account', uid)
+        self.server.handle('char:create_character', uid,
+                           len(characters) + 1,  # slot
+                           packet.name,  # character name
+                           '',  # unapproved name
+                           False,  # is name rejected
+                           packet.shirt_color,  # shirt color
+                           packet.shirt_style,  # shirt style
+                           packet.pants_color,  # pants color
+                           packet.hair_style,  # hair style
+                           packet.hair_color,  # hair color
+                           packet.lh,  # lh
+                           packet.rh,  # rh
+                           packet.eyebrows,  # eyebrows
+                           packet.eyes,  # eyes
+                           packet.mouth,  # mouth
+                           0,  # last zone
+                           0,  # last instance
+                           0,  # last clone
+                           0)  # last login
 
-        Character.objects.create(slot=len(characters) + 1,
-                                 account=account,
-                                 name=packet.name,
-                                 unapproved_name='',
-                                 is_name_rejected=False,
-                                 shirt_color=packet.shirt_color,
-                                 shirt_style=packet.shirt_style,
-                                 pants_color=packet.pants_color,
-                                 hair_style=packet.hair_style,
-                                 hair_color=packet.hair_color,
-                                 lh=packet.lh,
-                                 rh=packet.rh,
-                                 eyebrows=packet.eyebrows,
-                                 eyes=packet.eyes,
-                                 mouth=packet.mouth,
-                                 last_zone=0,
-                                 last_instance=0,
-                                 last_clone=0,
-                                 last_login=0)
+        ftp = self.server.handle_until_value('auth:get_free_to_play', True, uid)
 
         char = Minifigure(character_id=len(characters) + 1,
                           unknown1=0,
                           character_name=packet.name,
                           character_unapproved_name='',
                           is_name_rejected=False,
-                          free_to_play=account.free_to_play,
+                          free_to_play=ftp,
                           unknown2=0,
                           shirt_color=packet.shirt_color,
                           shirt_style=packet.shirt_style,
