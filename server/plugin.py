@@ -53,7 +53,7 @@ class Packet(Serializable):
         Deserialize the packet
         """
         header = LUHeader.deserialize(stream)
-        packet = packet_types.get(getattr(header, 'packet_name', None), None)
+        packet = packet_types.get(getattr(header, 'packet_name', None))
 
         if packet:
             return packet.deserialize(stream)
