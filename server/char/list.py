@@ -5,7 +5,7 @@ Character lsit
 from pyraknet.bitstream import Serializable, c_int64, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
 
 from plugin import Plugin, Action, Packet
-from structs import LUHeader, CString
+from structs import LUHeader, CString, WString
 
 
 class CharacterList(Plugin):
@@ -41,7 +41,7 @@ class CharacterList(Plugin):
         serializable_characters = []
 
         for character in characters:
-            serializable_character = Character(character_id=character.account.session.objid,
+            serializable_character = Character(character_id=999999999999999999,
                                                unknown1=0,
                                                character_name=character.name,
                                                character_unapproved_name=character.unapproved_name,
@@ -67,7 +67,7 @@ class CharacterList(Plugin):
 
             serializable_characters.append(serializable_character)
 
-        res = CharacterListResponse(serializable_characters, len(characters))
+        res = CharacterListResponse(serializable_characters, 0 if front_char > len(characters) - 1 else front_char)
 
         self.server.rnserver.send(res, address)
 
@@ -146,11 +146,14 @@ class Character(Serializable):
         """
         stream.write(c_int64(self.character_id))
         stream.write(c_uint32(self.unknown1))
-        stream.write(CString(self.character_name, allocated_length=66))
-        stream.write(CString(self.character_unapproved_name, allocated_length=66))
+        stream.write(WString(self.character_name))
+        stream.write(WString(self.character_unapproved_name))
         stream.write(c_bool(self.is_name_rejected))
         stream.write(c_bool(self.free_to_play))
-        stream.write(c_uint8(self.unknown2), allocated_length=10)  # NOTE: should this be an uint8?
+
+        for _ in range(10):
+            stream.write(b'\x00')
+
         stream.write(c_uint32(self.shirt_color))
         stream.write(c_uint32(self.shirt_style))
         stream.write(c_uint32(self.pants_color))
@@ -177,8 +180,8 @@ class Character(Serializable):
         """
         character_id = stream.read(c_int64)
         unknown1 = stream.read(c_uint32)
-        character_name = stream.read(CString('', allocated_length=66))
-        character_unapproved_name = stream.read(CString('', allocated_length=66))
+        character_name = stream.read(WString)
+        character_unapproved_name = stream.read(WString)
         is_name_rejected = stream.read(c_bool)
         free_to_play = stream.read(c_bool)
         unknown2 = stream.read(bytes, allocated_length=10)
