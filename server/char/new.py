@@ -55,7 +55,7 @@ class CreateCharacter(Plugin):
                            packet.eyebrows,  # eyebrows
                            packet.eyes,  # eyes
                            packet.mouth,  # mouth
-                           0,  # last zone
+                           1000,  # last zone
                            0,  # last instance
                            0,  # last clone
                            0)  # last login
