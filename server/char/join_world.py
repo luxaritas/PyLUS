@@ -50,7 +50,7 @@ class JoinWorld(Plugin):
 
         self.server.rnserver.send(res, address)
         self.server.repman.add_participant(address)
-        self.server.repman.construct(Player(char.name), True)
+        self.server.repman.construct(Player(char.name))
 
 
 class JoinWorldRequest(Packet):
