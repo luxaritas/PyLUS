@@ -36,7 +36,8 @@ class DjangoAuthentication(Plugin):
             Action('auth:free_to_play', self.get_lego_club, 10),
             Action('auth:lego_club', self.get_lego_club, 10),
             Action('auth:create_game_account', self.create_game_account, 10),
-            Action('auth:get_game_account', self.get_game_account, 10),
+            Action('auth:has_game_account', self.has_game_account, 10),
+            Action('auth:get_user_id_by_login', self.get_user_id_by_login, 10),
         ]
 
     def create_game_account(self, username, password, address, lego_club=False):
@@ -64,14 +65,15 @@ class DjangoAuthentication(Plugin):
 
         return account
 
-    def get_game_account(self, uid):
+    def has_game_account(self, uid):
         """
         Returns a game account linked to a user
         """
         try:
-            return Account.objects.get(user__id=uid)
+            Account.objects.get(user__id=uid)
+            return True
         except:  # TODO: find out where the DoesNotExist exception comes from
-            return None
+            return False
 
     def check_credentials(self, username, password):
         """
@@ -90,6 +92,7 @@ class DjangoAuthentication(Plugin):
 
         hashed = bcrypt.hashpw(token.encode('UTF-8'), bcrypt.gensalt())
         account.session.token = hashed.decode()
+        account.session.save()
         account.save()
         return token
 
@@ -117,6 +120,7 @@ class DjangoAuthentication(Plugin):
         account = Account.objects.get(user__pk=uid)
         account.session.address = address[0]
         account.session.port = address[1]
+        account.session.save()
         account.save()
 
     def get_address(self, uid):
@@ -125,6 +129,14 @@ class DjangoAuthentication(Plugin):
         """
         account = Account.objects.get(user__pk=uid)
         return account.session.address
+
+    def get_user_id_by_login(self, username, password):
+        """
+        Returns a user ID
+        """
+        user = authenticate(username=username, password=password)
+
+        return user.pk if user else None
 
     def get_user_id(self, address):
         """
