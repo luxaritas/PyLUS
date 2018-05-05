@@ -150,7 +150,7 @@ class Character(Serializable):
         stream.write(CString(self.character_unapproved_name, allocated_length=66))
         stream.write(c_bool(self.is_name_rejected))
         stream.write(c_bool(self.free_to_play))
-        stream.write(b'', allocated_length=10)
+        stream.write(c_uint8(self.unknown2), allocated_length=10)  # NOTE: should this be an uint8?
         stream.write(c_uint32(self.shirt_color))
         stream.write(c_uint32(self.shirt_style))
         stream.write(c_uint32(self.pants_color))
