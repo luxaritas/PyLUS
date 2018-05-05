@@ -17,13 +17,11 @@ class Player(Replica):
     """
     def __init__(self, name):
         self.name = name
-        self.control = ControllablePhysics()
+        self.control = ControllablePhysics(player=True)
         self.char = Character()
         self.render = Render()
 
     def serialize(self, stream):
-        stream.write(c_bit(True))
-        stream.write(c_bit(False))
         stream.write(c_bit(False))
 
         self.control.serialize(stream)
@@ -45,8 +43,6 @@ class Player(Replica):
         stream.write(c_bit(False))
         stream.write(c_bit(False))
 
-        stream.write(c_bit(True))
-        stream.write(c_bit(False))
         stream.write(c_bit(False))
 
         self.control.write_construction(stream)
