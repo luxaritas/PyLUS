@@ -33,10 +33,7 @@ class CharacterList(Plugin):
         """
         Handles a char list request
         """
-        # TODO: find a solution for the connections problem
-        # uid = self.server.connections[address]['uid']
-
-        uid = 1
+        uid = self.server.handle_until_return('auth:get_user_id', address)
 
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         characters = self.server.handle_until_return('char:characters', uid)
@@ -70,7 +67,7 @@ class CharacterList(Plugin):
 
             serializable_characters.append(serializable_character)
 
-        res = CharacterListResponse(serializable_characters, 0 if len(characters) == 0 else 1)
+        res = CharacterListResponse(serializable_characters, len(characters))
 
         self.server.rnserver.send(res, address)
 
@@ -104,12 +101,11 @@ class CharacterListResponse(Packet):
         """
         super().serialize(stream)
 
-        print(len(self.characters))
-
         stream.write(c_uint8(len(self.characters)))
         stream.write(c_uint8(self.front_char))
+
         for character in self.characters:
-            character.serialize(stream)
+            stream.write(character)
 
 
 class Character(Serializable):

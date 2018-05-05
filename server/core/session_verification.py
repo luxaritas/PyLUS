@@ -33,14 +33,8 @@ class SessionVerification(Plugin):
         """
         Verifies a session
         """
-        pass
-        # TODO: uncomment when connection stuff is fixed
-        # if self.server.handle_until_value('auth:check_token', True, packet.username, packet.session_key):
-        #     uid = self.server.handle_until_return('auth:get_user_id', address)
-        #
-        #     self.server.add_connection(address, uid)
-        # else:
-        #     self.server.rnserver.close_connection(address)
+        if not self.server.handle_until_value('auth:check_token', True, packet.username, packet.session_key):
+            self.server.rnserver.close_connection(address)
 
     def allow_packet(self, data, address):
         """
@@ -49,11 +43,9 @@ class SessionVerification(Plugin):
         packet = Packet.deserialize(ReadStream(data), self.server.packets)
 
         if not getattr(packet, 'allow_without_session'):
-            pass
-            # TODO: see comment above
-            # conn = self.server.connections.get(address)
-            # if not conn or not conn.get('uid'):
-            #     self.server.rnserver.close_connection(address)
+            uid = self.server.handle_until_value('auth:get_user_id', True, address)
+            if not uid:
+                self.server.rnserver.close_connection(address)
 
 
 class SessionInfo(Packet):
