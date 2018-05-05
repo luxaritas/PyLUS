@@ -30,7 +30,7 @@ class PacketRouter(Plugin):
         """
         packet = Packet.deserialize(ReadStream(data), self.server.packets)
 
-        if not getattr(packet.header, 'packet_name'):
+        if not getattr(packet.header, 'packet_name', None):
             self.server.handle('pkt:unknown_packet', packet)
         else:
             log.debug(f'[{self.server.type}] Recieved LU Packet {packet.header.packet_name}')
