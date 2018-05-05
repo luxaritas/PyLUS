@@ -14,6 +14,7 @@ import sys
 sys.path.append(os.path.abspath('..'))
 
 from pyraknet.server import Server as RNServer, Event as RNEvent
+from pyraknet.replicamanager import ReplicaManager
 from django.conf import settings
 from django.apps import apps
 
@@ -42,6 +43,7 @@ class Server:
     """
     def __init__(self, server_type: str, host: str, port: int, max_connections: int, config: dict):
         self.rnserver = RNServer((host, port), max_connections, b'3.25 ND1')
+        self.repman = ReplicaManager(self.rnserver)
         self.rnserver.add_handler(RNEvent.NetworkInit, lambda addr: self.handle('rn:network_init', addr))
         self.rnserver.add_handler(RNEvent.Disconnect, lambda addr: self.handle('rn:disconnect', addr))
         self.rnserver.add_handler(RNEvent.UserPacket, lambda data, addr: self.handle('rn:user_packet', data, addr))
