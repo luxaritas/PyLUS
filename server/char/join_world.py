@@ -6,9 +6,9 @@ from pyraknet.bitstream import WriteStream, c_int, c_int64, c_uint, c_uint8, c_u
 
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
-from plugin import Plugin, Action, Packet
+from plugin import Plugin, Action
 from enums import ZONE_CHECKSUMS, GameMessageID
-from structs import get_wstring_without_null, GameMessage
+from structs import GameMessage, Packet
 
 
 class JoinWorld(Plugin):
@@ -124,13 +124,11 @@ class DetailedUserInfo(Packet):
 
         ldf.write(c_uint(2))
 
-        ldf.write(c_uint8(10))
-        ldf.write(get_wstring_without_null('objid'))
+        ldf.write('objid', length_type=c_uint8)
         ldf.write(c_uint8(9))
         ldf.write(c_int64(self.objid))
 
-        ldf.write(c_uint8(16))
-        ldf.write(get_wstring_without_null('template'))
+        ldf.write('template', length_type=c_uint8)
         ldf.write(c_uint8(1))
         ldf.write(c_int(1))
 
