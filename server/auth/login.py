@@ -4,8 +4,8 @@ Login plugin
 
 from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
 
-from plugin import Plugin, Action, Packet
-from structs import LUHeader, CString
+from plugin import Plugin, Action
+from structs import LUHeader, Packet, CString
 
 
 class Login(Plugin):

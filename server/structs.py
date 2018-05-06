@@ -4,7 +4,8 @@ Structs
 
 from typing import overload
 
-from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_int64
+from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int64
+
 from enums import PACKET_IDS, PACKET_NAMES
 
 
@@ -82,6 +83,56 @@ class LUHeader(Serializable):
         return cls(remote_conn_id, packet_id)
 
 
+class Packet(Serializable):
+    """
+    Packet class
+    """
+    allow_without_session = False
+
+    @overload
+    def __init__(self):
+        pass
+
+    def __init__(self, header: LUHeader = None, data: bytes = None, **kwargs):
+        packet_name = getattr(self.__class__, 'packet_name', None)
+
+        if packet_name:
+            self.header = LUHeader(packet_name)
+            for prop, val in kwargs.items():
+                setattr(self, prop, val)
+        elif header and data != None:
+            self.header = header
+            self.data = data
+        else:
+            raise KeyError('Packets must either be instantiated from a base class with a packet_name, Packet.deserialize(), or with a header and data argument')
+
+    def __bytes__(self):
+        stream = WriteStream()
+        self.serialize(stream)
+        return bytes(stream)
+
+    def serialize(self, stream):
+        """
+        Serialize the packet
+        """
+        self.header.serialize(stream)
+        if getattr(self, 'data', None) is not None:
+            stream.write(self.data)
+
+    @classmethod
+    def deserialize(cls, stream, packet_types):
+        """
+        Deserialize the packet
+        """
+        header = LUHeader.deserialize(stream)
+        packet = packet_types.get(getattr(header, 'packet_name', None))
+
+        if packet:
+            return packet.deserialize(stream)
+
+        return cls(header=header, data=stream.read_remaining())
+
+
 class GameMessage(Packet):
     """
     Game message packet
@@ -102,16 +153,3 @@ class GameMessage(Packet):
                 stream.write(self.data)
             else:
                 stream.write(bytes(self.data))
-
-
-def get_wstring_without_null(string):
-    """
-    Returns a wstring without null at the end
-    """
-    data = b''
-
-    for char in string:
-        data += char
-        data += b'\0'
-
-    return data
