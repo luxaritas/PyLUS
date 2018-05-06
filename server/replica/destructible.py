@@ -12,6 +12,7 @@ class Destructible(Component):
     """
     def write_construction(self, stream):
         stream.write(c_bit(False))  # NOTE: unknown flag(?)
+        stream.write(c_bit(False))  # NOTE: unknown flag
 
     def serialize(self, stream):
         pass

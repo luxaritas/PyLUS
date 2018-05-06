@@ -14,7 +14,7 @@ class ControllablePhysics(Component):
     """
 
     def __init__(self, jetpack=False, jetpack_effect=0, player=False, player_x=0, player_y=1, player_z=0, player_rot_x=0,
-                 player_rot_y=0, player_rot_z=0, player_rot_w=0, player_ground=True, player_velocity=False, player_velocity_x=0,
+                 player_rot_y=0, player_rot_z=0, player_rot_w=0, player_ground=True, player_rail=False, player_velocity=False, player_velocity_x=0,
                  player_velocity_y=0, player_velocity_z=0, player_angular_velocity=False, player_angular_velocity_x=0,
                  player_angular_velocity_y=0, player_angular_velocity_z=0, player_platform=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
@@ -40,7 +40,7 @@ class ControllablePhysics(Component):
             stream.write(c_float(self.player_rot_w))
 
             stream.write(c_bit(self.player_ground))
-            stream.write(c_bit(False))  # NOTE: unknown
+            stream.write(c_bit(self.player_rail))
 
             stream.write(c_bit(self.player_velocity))
 
