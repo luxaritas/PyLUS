@@ -42,7 +42,7 @@ class Login(Plugin):
             uid = self.server.handle_until_return('auth:get_user_id_by_login', packet.username, packet.password)
 
             if not self.server.handle_until_value('auth:has_game_account', True, uid):
-                self.server.handle('auth:create_game_account', True, packet.username, packet.password, address)
+                self.server.handle('auth:create_game_account', packet.username, packet.password, address)
             else:
                 self.server.handle('auth:set_address', uid, address)
 
