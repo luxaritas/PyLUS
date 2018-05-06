@@ -68,7 +68,6 @@ class Login(Plugin):
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
 
         if uid:
-            # self.server.handle('auth:set_address', True, uid, address)
             new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, uid)
             ftp = self.server.handle_until_value('auth:free_to_play', True, uid)
         else:
