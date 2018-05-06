@@ -1,5 +1,5 @@
 """
-Join
+Join world
 """
 
 from pyraknet.bitstream import Serializable, c_int64, c_uint16, c_uint32, c_float
@@ -7,7 +7,7 @@ from pyraknet.bitstream import Serializable, c_int64, c_uint16, c_uint32, c_floa
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from plugin import Plugin, Action, Packet
-from structs import CString
+from enums import ZONE_CHECKSUMS
 
 
 class JoinWorld(Plugin):
@@ -36,12 +36,12 @@ class JoinWorld(Plugin):
         """
         char_id = packet.character_id
 
-        char = self.server.handle_until_return('char:characters', 1)[0]  # TODO: make this not just get the first character of the first user
+        char = self.server.handle_until_return('char:get_character', char_id)
 
-        res = WorldInfo(1000,
+        res = WorldInfo(char.last_zone,
                         0,
                         0,
-                        0x7c08b820,
+                        ZONE_CHECKSUMS[char.last_zone],
                         0,
                         0,
                         1,

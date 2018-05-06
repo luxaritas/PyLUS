@@ -43,7 +43,6 @@ class Server:
     """
     def __init__(self, server_type: str, host: str, port: int, max_connections: int, config: dict):
         self.rnserver = RNServer((host, port), max_connections, b'3.25 ND1')
-        self.repman = ReplicaManager(self.rnserver)
         self.rnserver.add_handler(RNEvent.NetworkInit, lambda addr: self.handle('rn:network_init', addr))
         self.rnserver.add_handler(RNEvent.Disconnect, lambda addr: self.handle('rn:disconnect', addr))
         self.rnserver.add_handler(RNEvent.UserPacket, lambda data, addr: self.handle('rn:user_packet', data, addr))
@@ -52,11 +51,13 @@ class Server:
         self.plugins = []
         self.handlers = {}
         self.packets = {}
-        self.connections = {}
 
         self.register_plugins('core')
         self.register_plugins('core.django_cms')
         self.register_plugins(self.type if self.type in ['auth', 'char', 'chat'] else 'world')
+
+        if self.type not in ['auth', 'chat']:
+            self.repman = ReplicaManager(self.rnserver)
 
     def register_plugins(self, package: str):
         """
@@ -129,9 +130,6 @@ class Server:
                 return result
 
         return None
-
-    def add_connection(self, address, uid):
-        self.connections[address] = {'uid': uid}
 
 
 if __name__ == '__main__':

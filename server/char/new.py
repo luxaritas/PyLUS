@@ -33,7 +33,7 @@ class CreateCharacter(Plugin):
         """
         Handles the request
         """
-        uid = 1
+        uid = self.server.handle_until_return('auth:get_user_id', address)
         status = 0x00
 
         characters = self.server.handle_until_return('char:characters', uid)
@@ -62,6 +62,8 @@ class CreateCharacter(Plugin):
 
         ftp = self.server.handle_until_value('auth:get_free_to_play', True, uid)
 
+        serializable_chars = []
+
         char = Minifigure(character_id=len(characters) + 1,
                           unknown1=0,
                           character_name=packet.name,
@@ -86,11 +88,37 @@ class CreateCharacter(Plugin):
                           last_login=0,
                           items=[])
 
-        chars = list(characters)
-        chars.append(char)
+        for character in characters:
+            serializable_char = Minifigure(characted_id=character.id,
+                                           unknown1=0,
+                                           character_name=character.name,
+                                           character_unapproved_name=character.unapproved_name,
+                                           is_name_rejected=character.is_name_rejected,
+                                           free_to_play=character.account.free_to_play,
+                                           unknown2=0,
+                                           shirt_color=character.shirt_color,
+                                           shirt_style=character.shirt_style,
+                                           pants_color=character.pants_color,
+                                           hair_style=character.hair_style,
+                                           hair_color=character.hair_color,
+                                           lh=character.lh,
+                                           rh=character.rh,
+                                           eyebrows=character.eyebrows,
+                                           eyes=character.eyes,
+                                           mouth=character.mouth,
+                                           unknown3=0,
+                                           last_zone=character.last_zone,
+                                           last_instance=character.last_instance,
+                                           last_clone=character.last_clone,
+                                           last_login=character.last_login,
+                                           items=[])
+
+            serializable_chars.append(serializable_char)
+
+        serializable_chars.append(char)
 
         res = MinifigureCreateResponse(status)
-        res2 = CharacterListResponse(chars, len(chars))
+        res2 = CharacterListResponse(serializable_chars, len(serializable_chars) - 1)
 
         self.server.rnserver.send(res, address)
         self.server.rnserver.send(res2, address)

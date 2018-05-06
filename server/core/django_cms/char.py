@@ -25,6 +25,7 @@ class DjangoCharacterList(Plugin):
             Action('char:characters', self.get_characters, 10),
             Action('char:front_char_index', self.get_front_character, 10),
             Action('char:create_character', self.create_character, 10),
+            Action('char:get_character', self.get_character, 10),
         ]
 
     def create_character(self, uid, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
@@ -60,6 +61,12 @@ class DjangoCharacterList(Plugin):
         Returns all characters for a user
         """
         return Character.objects.all().filter(account_id__pk=uid)
+
+    def get_character(self, char_id):
+        """
+        Returns the character with that id
+        """
+        return Character.objects.get(id=char_id)
 
     def get_front_character(self, uid):
         """
