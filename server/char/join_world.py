@@ -124,11 +124,13 @@ class DetailedUserInfo(Packet):
 
         ldf.write(c_uint(2))
 
-        ldf.write('objid', length_type=c_uint8)
+        ldf.write(c_uint8(10))
+        ldf.write(b'o\0b\0j\0i\0d\0')
         ldf.write(c_uint8(9))
         ldf.write(c_int64(self.objid))
 
-        ldf.write('template', length_type=c_uint8)
+        ldf.write(c_uint8(16))
+        ldf.write(b't\0e\0m\0p\0l\0a\0t\0e\0')
         ldf.write(c_uint8(1))
         ldf.write(c_int(1))
 
