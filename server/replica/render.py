@@ -14,3 +14,6 @@ class Render(Component):
     """
     def write_construction(self, stream):
         stream.write(c_uint32(0))  # TODO: add a var for this
+
+    def serialize(self, stream):
+        pass
