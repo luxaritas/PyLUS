@@ -74,7 +74,7 @@ class LUHeader(Serializable):
         packet_id = stream.read(c_uint32)
         stream.read(c_uint8)  # unknown
 
-        packet_name = PACKET_NAMES.get(remote_conn_id, {}).get(packet_id, None)
+        packet_name = PACKET_NAMES.get(remote_conn_id, {}).get(packet_id)
 
         if packet_name:
             return cls(packet_name)
