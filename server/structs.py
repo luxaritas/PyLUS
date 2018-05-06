@@ -8,33 +8,6 @@ from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32
 from enums import PACKET_IDS, PACKET_NAMES
 
 
-class WString(Serializable):
-    """
-    wstring serializable
-    """
-    def __init__(self, data='', length=33):
-        self.data = data
-        self.length = length
-
-    def serialize(self, stream):
-        if len(self.data) < self.length:
-            self.data += '\0' * (self.length - len(self.data))
-
-        for i in range(self.length):
-            stream.write(c_uint8(ord(self.data[i])))
-            stream.write(c_uint8(0))
-
-    @classmethod
-    def deserialize(cls, stream):
-        data = ''
-
-        for _ in range(33):
-            data += chr(stream.read(c_uint8))
-            stream.read(c_uint8)
-
-        return cls(data)
-
-
 class CString(Serializable):
     """
     C string serializable

@@ -6,13 +6,13 @@ from pyraknet.bitstream import c_bit, c_uint8, c_uint16, c_uint32, c_uint64, c_i
 from pyraknet.replicamanager import Replica
 
 from replica.component import Component
-from structs import WString
 
 
 class Character(Component):
     """
     Character replica
     """
+    # TODO: use **kwargs instead of a thousand arguments
     def __init__(self, vehicle=False, vehicle_id=0, level=False, level_num=1, hair_color=0, hair_style=0, shirt_color=0,
                  pants_color=0, eyebrows=0, eyes=0, mouth=0, account_id=1, llog=0, lego_score=0, free_to_play=False,
                  currency_collected=0, bricks_collected=0, smashables_smashed=0, quick_builds=0, enemies_smashed=0,
@@ -24,7 +24,7 @@ class Character(Component):
                  rocket_modules=[''], glowing_head=False, guild=False, guild_id=0, guild_name=''):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
-    def write_data1(self, stream):
+    def pre_creation(self, stream):
         """
         Writes part 1 of data
         """
@@ -42,7 +42,7 @@ class Character(Component):
 
         stream.write(c_bit(False))  # NOTE: unknown flag
 
-    def write_data2(self, stream):
+    def post_creation(self, stream):
         """
         Writes part 2 of data
         """
@@ -57,12 +57,12 @@ class Character(Component):
 
         if self.guild:
             stream.write(c_int64(self.guild_id))
-            stream.write(WString(self.guild_name))
+            stream.write(self.guild_name, allocated_length=33)
             stream.write(c_bit(False))  # NOTE: unknown
             stream.write(c_int32(0))  # NOTE: unknown
 
     def write_construction(self, stream):
-        self.write_data1(stream)
+        self.pre_creation(stream)
 
         stream.write(c_bit(False))  # NOTE: unknown flag(?)
         stream.write(c_bit(False))  # NOTE: unknown flag
@@ -123,11 +123,11 @@ class Character(Component):
             stream.write(c_uint16(self.rocket_characters))
             # TODO: LDF rocket info
 
-        self.write_data2(stream)
+        self.post_creation(stream)
 
     def serialize(self, stream):
         """
         Serializes the component
         """
-        self.write_data1(stream)
-        self.write_data2(stream)
+        self.pre_creation(stream)
+        self.post_creation(stream)

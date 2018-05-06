@@ -9,7 +9,6 @@ from replica.controllable_physics import ControllablePhysics
 from replica.character import Character
 from replica.render import Render
 
-from structs import WString
 
 class Player(Replica):
     """
@@ -33,7 +32,7 @@ class Player(Replica):
         stream.write(c_int32(0))
 
         stream.write(c_uint8(len(self.name)))
-        stream.write(WString(self.name, length=16))
+        stream.write(self.name, allocated_length=16)
 
         stream.write(c_bit(False))
         stream.write(c_bit(False))

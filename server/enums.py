@@ -5,7 +5,19 @@ Enums
 from enum import IntEnum
 
 
+ZONE_CHECKSUMS = {
+    1000: 0x20b8087c,
+    1001: 0x26680a3c,
+    1002: 0x49525511,
+    1003: 0x538214e2,
+    1004: 0x0fd403da,
+}
+
+
 class ZoneChecksum(IntEnum):
+    """
+    Zone checksums enum
+    """
     VENTURE_EXPLORER = 0x20b8087c
     RETURN_TO_VENTURE_EXPLORER = 0x26680a3c
     AVANT_GARDENS = 0x49525511

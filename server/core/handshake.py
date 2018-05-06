@@ -4,7 +4,6 @@ Handshake
 
 from pyraknet.bitstream import c_uint16, c_uint32
 from plugin import Plugin, Action, Packet
-from structs import LUHeader
 
 
 class Handshake(Plugin):
@@ -13,7 +12,6 @@ class Handshake(Plugin):
     """
     def __init__(self, server):
         super().__init__(server)
-        self.server.connections = {}
 
     def actions(self):
         """
@@ -21,7 +19,6 @@ class Handshake(Plugin):
         """
         return [
             Action('pkt:handshake', self.handshake, 10),
-            Action('rn:disconnect', self.remove_connection, 10)
         ]
 
     def packets(self):
@@ -29,22 +26,15 @@ class Handshake(Plugin):
         Returns all packets
         """
         return [
-            HandshakePacket
+            HandshakePacket,
         ]
 
     def handshake(self, packet, address):
         """
         Makes a handshake with a client
         """
-        self.server.connections[address] = {}
         remote_conn_type = 0x01 if self.server.type == 'auth' else 0x04
         self.server.rnserver.send(HandshakePacket(remote_conn_type), address)
-
-    def remove_connection(self, address):
-        """
-        Removes a connection
-        """
-        self.server.connections.pop(address)
 
 
 class HandshakePacket(Packet):
@@ -54,7 +44,8 @@ class HandshakePacket(Packet):
     packet_name = 'handshake'
     allow_without_session = True
 
-    def __init__(self, remote_conn_type, game_version=171022, unknown=0x93, process_id=0, local_port=0xff, local_ip=b'127.0.0.1'):
+    def __init__(self, remote_conn_type, game_version=171022, unknown=0x93, process_id=0, local_port=0xff,
+                 local_ip=b'127.0.0.1'):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
