@@ -9,6 +9,7 @@ from replica.player import Player
 from plugin import Plugin, Action, Packet
 from packets import GameMessage
 from enums import ZONE_CHECKSUMS, GameMessageID
+from structs import get_wstring_without_null
 
 
 class JoinWorld(Plugin):
@@ -125,12 +126,12 @@ class DetailedUserInfo(Packet):
         ldf.write(c_uint(2))
 
         ldf.write(c_uint8(10))
-        ldf.write(b'o\0b\0j\0i\0d\0')
+        ldf.write(get_wstring_without_null('objid'))
         ldf.write(c_uint8(9))
         ldf.write(c_int64(self.objid))
 
         ldf.write(c_uint8(16))
-        ldf.write(b't\0e\0m\0p\0l\0a\0t\0e\0')
+        ldf.write(get_wstring_without_null('template'))
         ldf.write(c_uint8(1))
         ldf.write(c_int(1))
 

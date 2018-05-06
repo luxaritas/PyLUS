@@ -80,3 +80,16 @@ class LUHeader(Serializable):
             return cls(packet_name)
 
         return cls(remote_conn_id, packet_id)
+
+
+def get_wstring_without_null(string):
+    """
+    Returns a wstring without null at the end
+    """
+    data = b''
+
+    for char in string:
+        data += char
+        data += b'\0'
+
+    return data
