@@ -57,6 +57,7 @@ class Server:
         self.register_plugins(self.type if self.type in ['auth', 'char', 'chat'] else 'world')
 
         if self.type not in ['auth', 'chat']:
+            self.rnserver.file_logged_packets.update(['ReplicaManagerConstruction'])
             self.repman = ReplicaManager(self.rnserver)
 
     def register_plugins(self, package: str):
