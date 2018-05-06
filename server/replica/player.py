@@ -14,7 +14,8 @@ class Player(Replica):
     """
     Player replica object
     """
-    def __init__(self, name):
+    def __init__(self, id, name):
+        self.id = id
         self.name = name
         self.control = ControllablePhysics(player=True)
         self.char = Character()
@@ -28,11 +29,11 @@ class Player(Replica):
         self.render.serialize(stream)
 
     def write_construction(self, stream):
-        stream.write(c_int64(9999999999))
+        stream.write(c_int64(self.id))
         stream.write(c_int32(0))
 
         stream.write(c_uint8(len(self.name)))
-        stream.write(self.name, allocated_length=16)
+        stream.write(self.name, allocated_length=32)
 
         stream.write(c_bit(False))
         stream.write(c_bit(False))

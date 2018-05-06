@@ -40,10 +40,18 @@ class CreateCharacter(Plugin):
 
         # NOTE: shouldn't we check if len(characters) >= 4?
 
+        first = open('./names/minifigname_first.txt', 'r').readlines()
+        middle = open('./names/minifigname_middle.txt', 'r').readlines()
+        last = open('./names/minifigname_last.txt', 'r').readlines()
+
+        part1 = first[packet.predef_name1].strip()
+        part2 = middle[packet.predef_name2].strip()
+        part3 = last[packet.predef_name3].strip()
+
         self.server.handle('char:create_character', uid,
                            len(characters) + 1,  # slot
-                           packet.name,  # character name
-                           '',  # unapproved name
+                           part1 + part2 + part3,  # character name
+                           packet.name,  # unapproved name
                            False,  # is name rejected
                            packet.shirt_color,  # shirt color
                            packet.shirt_style,  # shirt style
@@ -64,32 +72,10 @@ class CreateCharacter(Plugin):
 
         serializable_chars = []
 
-        char = Minifigure(character_id=len(characters) + 1,
-                          unknown1=0,
-                          character_name=packet.name,
-                          character_unapproved_name='',
-                          is_name_rejected=False,
-                          free_to_play=ftp,
-                          unknown2=0,
-                          shirt_color=packet.shirt_color,
-                          shirt_style=packet.shirt_style,
-                          pants_color=packet.pants_color,
-                          hair_style=packet.hair_style,
-                          hair_color=packet.hair_color,
-                          lh=packet.lh,
-                          rh=packet.rh,
-                          eyebrows=packet.eyebrows,
-                          eyes=packet.eyes,
-                          mouth=packet.mouth,
-                          unknown3=0,
-                          last_zone=0,
-                          last_instance=0,
-                          last_clone=0,
-                          last_login=0,
-                          items=[])
+        characters = self.server.handle_until_return('char:characters', uid)
 
         for character in characters:
-            serializable_char = Minifigure(characted_id=character.id,
+            serializable_char = Minifigure(character_id=character.id,
                                            unknown1=0,
                                            character_name=character.name,
                                            character_unapproved_name=character.unapproved_name,
@@ -114,8 +100,6 @@ class CreateCharacter(Plugin):
                                            items=[])
 
             serializable_chars.append(serializable_char)
-
-        serializable_chars.append(char)
 
         res = MinifigureCreateResponse(status)
         res2 = CharacterListResponse(serializable_chars, len(serializable_chars) - 1)
