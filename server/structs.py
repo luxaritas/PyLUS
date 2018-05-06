@@ -4,7 +4,7 @@ Structs
 
 from typing import overload
 
-from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32
+from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_int64
 from enums import PACKET_IDS, PACKET_NAMES
 
 
@@ -80,6 +80,28 @@ class LUHeader(Serializable):
             return cls(packet_name)
 
         return cls(remote_conn_id, packet_id)
+
+
+class GameMessage(Packet):
+    """
+    Game message packet
+    """
+    packet_name = 'server_game_message'
+
+    def __init__(self, objid, message_id, data=None):
+        super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
+
+    def serialize(self, stream):
+        super().serialize(stream)
+
+        stream.write(c_int64(self.objid))
+        stream.write(c_uint16(self.message_id))
+
+        if getattr(self, 'data', None):
+            if isinstance(self.data, bytes):
+                stream.write(self.data)
+            else:
+                stream.write(bytes(self.data))
 
 
 def get_wstring_without_null(string):
