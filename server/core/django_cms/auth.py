@@ -72,7 +72,7 @@ class DjangoAuthentication(Plugin):
         try:
             Account.objects.get(user__id=uid)
             return True
-        except:  # TODO: find out where the DoesNotExist exception comes from
+        except Account.DoesNotExist:
             return False
 
     def check_credentials(self, username, password):
