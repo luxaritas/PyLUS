@@ -55,9 +55,9 @@ class Player(Replica):
         stream.write(c_uint8(0))
 
         # stream.write(c_uint8(len(self.name)))
-        # stream.write(self.name, allocated_length=len(self.name) * 2)
+        # stream.write(self.name, length_type=c_uint8)
 
-        stream.write(c_uint32(25))
+        stream.write(c_uint32(0))
 
         stream.write(c_bit(False))
         stream.write(c_bit(False))

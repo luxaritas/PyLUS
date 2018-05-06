@@ -2,12 +2,13 @@
 Join world
 """
 
-from pyraknet.bitstream import Serializable, c_int64, c_uint16, c_uint32, c_float
+from pyraknet.bitstream import WriteStream, c_int, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool
 
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from plugin import Plugin, Action, Packet
-from enums import ZONE_CHECKSUMS
+from packets import GameMessage
+from enums import ZONE_CHECKSUMS, GameMessageID
 
 
 class JoinWorld(Plugin):
@@ -48,9 +49,16 @@ class JoinWorld(Plugin):
                         0,
                         0)
 
+        char_info = DetailedUserInfo(char_id)
+        obj_load = GameMessage(char_id, GameMessageID.DONE_LOADING_OBJECTS.value)
+        player_ready = GameMessage(char_id, GameMessageID.PLAYER_READY.value)
+
         self.server.rnserver.send(res, address)
+        self.server.rnserver.send(char_info, address)
         self.server.repman.add_participant(address)
         self.server.repman.construct(Player(char_id, char.name))
+        self.server.rnserver.send(obj_load, address)
+        self.server.rnserver.send(player_ready, address)
 
 
 class JoinWorldRequest(Packet):
@@ -96,3 +104,38 @@ class WorldInfo(Packet):
         stream.write(c_float(self.pos_y))
         stream.write(c_float(self.pos_z))
         stream.write(c_uint32(self.is_activity))
+
+class DetailedUserInfo(Packet):
+    """
+    Character data packet
+    """
+    packet_name = 'detailed_user_info'
+
+    def __init__(self, objid):
+        super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
+
+    def serialize(self, stream):
+        """
+        Serializes the packet
+        """
+        super().serialize(stream)
+
+        ldf = WriteStream()
+
+        ldf.write(c_uint(2))
+
+        ldf.write(c_uint8(10))
+        ldf.write(b'o\0b\0j\0i\0d\0')
+        ldf.write(c_uint8(9))
+        ldf.write(c_int64(self.objid))
+
+        ldf.write(c_uint8(16))
+        ldf.write(b't\0e\0m\0p\0l\0a\0t\0e\0')
+        ldf.write(c_uint8(1))
+        ldf.write(c_int(1))
+
+        ldf_bytes = bytes(ldf)
+
+        stream.write(c_uint32(len(ldf_bytes) + 5))
+        stream.write(c_bool(False))
+        stream.write(ldf_bytes)

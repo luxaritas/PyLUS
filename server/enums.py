@@ -14,6 +14,14 @@ ZONE_CHECKSUMS = {
 }
 
 
+class GameMessageID(IntEnum):
+    """
+    Game messages
+    """
+    DONE_LOADING_OBJECTS = 0x066a
+    PLAYER_READY = 0x01fd
+
+
 class ZoneChecksum(IntEnum):
     """
     Zone checksums enum
@@ -71,13 +79,17 @@ PACKET_NAMES = {
         0x02: 'character_list_request',
         0x03: 'minifig_create_request',
         0x04: 'join_world_request',
+        0x15: 'routed_packet',
+        0x16: 'position_update',
     },
     # Server
     0x05: {
         0x00: 'login_response',
         0x02: 'world_info',
+        0x04: 'detailed_user_info',
         0x06: 'character_list_response',
         0x07: 'minifig_create_response',
+        0x0c: 'server_game_message',
     }
 }
 
