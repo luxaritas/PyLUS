@@ -7,9 +7,8 @@ from pyraknet.bitstream import WriteStream, c_int, c_int64, c_uint, c_uint8, c_u
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from plugin import Plugin, Action, Packet
-from packets import GameMessage
 from enums import ZONE_CHECKSUMS, GameMessageID
-from structs import get_wstring_without_null
+from structs import get_wstring_without_null, GameMessage
 
 
 class JoinWorld(Plugin):
