@@ -42,6 +42,7 @@ PACKET_NAMES = {
         0x02: 'character_list_request',
         0x03: 'minifig_create_request',
         0x04: 'join_world_request',
+        0x13: 'client_load_complete',
         0x15: 'routed_packet',
         0x16: 'position_update',
     },

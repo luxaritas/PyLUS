@@ -52,7 +52,7 @@ class Player(Replica):
         stream.write(c_int64(self.id))
         stream.write(c_int32(1))
 
-        stream.write(c_uint8(len(self.name) * 2))
+        stream.write(c_uint8(len(self.name)))
 
         for char in self.name:
             stream.write(char.encode())

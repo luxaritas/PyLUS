@@ -60,7 +60,7 @@ class DjangoCharacterList(Plugin):
         """
         Returns all characters for a user
         """
-        return Character.objects.all().filter(account_id__pk=uid)
+        return Character.objects.all().filter(account__user__pk=uid)
 
     def get_character(self, char_id):
         """
