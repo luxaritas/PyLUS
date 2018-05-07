@@ -3,8 +3,10 @@ Structs
 """
 
 from typing import overload
+from xml.etree import ElementTree
 
-from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int64
+from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
+                               c_double, c_uint
 
 from enums import PACKET_IDS, PACKET_NAMES
 
@@ -81,6 +83,91 @@ class LUHeader(Serializable):
             return cls(packet_name)
 
         return cls(remote_conn_id, packet_id)
+
+
+class LegoDataKey(Serializable):
+    """
+    LDF key serializable
+    """
+    def __init__(self, key, data, data_type=None):
+        self.key = key
+        self.data = data
+        self.data_type = data_type
+
+    def serialize(self, stream):
+        stream.write(c_uint8(len(self.key) * 2))
+
+        for char in self.key:
+            stream.write(char.encode('latin1'))
+            stream.write(b'\0')
+
+        if not self.data_type:
+            if isinstance(self.data, str):
+                stream.write(c_uint8(0))
+
+                stream.write(c_uint(len(self.data) * 2))
+
+                for char in self.data:
+                    stream.write(char.encode('latin1'))
+                    stream.write(b'\0')
+
+            elif isinstance(self.data, c_int32):
+                stream.write(c_uint8(1))
+            elif isinstance(self.data, c_float):
+                stream.write(c_uint8(3))
+            elif isinstance(self.data, c_double):
+                stream.write(c_uint8(4))
+            elif isinstance(self.data, c_uint32):
+                stream.write(c_uint8(5))
+            elif isinstance(self.data, c_bit):
+                stream.write(c_uint8(7))
+            elif isinstance(self.data, c_int64):
+                stream.write(c_uint8(8))
+            elif isinstance(self.data, ElementTree.Element):
+                stream.write(c_uint8(13))
+
+                txt = '<?xml version="1.0"?>' + ElementTree.tostring(self.data).decode('latin1')
+
+                stream.write(c_uint32(len(txt) * 2))
+
+                for char in txt:
+                    stream.write(char.encode('latin1'))
+                    stream.write(b'\0')
+
+            if not isinstance(self.data, str) and not isinstance(self.data, ElementTree.Element):
+                stream.write(self.data)
+        else:
+            stream.write(c_uint8(self.data_type))
+            stream.write(self.data)
+
+    @classmethod
+    def deserialize(cls, stream):
+        pass
+
+
+class LegoData(Serializable):
+    """
+    LDF serializable
+    """
+    def __init__(self):
+        self.keys = []
+
+    def write(self, key, data, data_type=None):
+        ldf_key = LegoDataKey(key, data, data_type)
+
+        self.keys.append(ldf_key)
+
+    def serialize(self, stream):
+        super().serialize(stream)
+
+        stream.write(c_uint32(len(self.keys)))
+
+        for key in self.keys:
+            key.serialize(stream)
+
+    @classmethod
+    def deserialize(cls, stream):
+        return cls()
 
 
 class Packet(Serializable):

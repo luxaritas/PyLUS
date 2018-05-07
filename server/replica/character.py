@@ -40,7 +40,9 @@ class Character(Component):
         if self.level:
             stream.write(c_uint32(self.level_num))
 
-        stream.write(c_bit(False))  # NOTE: unknown flag
+        stream.write(c_bit(True))
+        stream.write(c_bit(False))
+        stream.write(c_bit(False))
 
     def post_creation(self, stream):
         """
