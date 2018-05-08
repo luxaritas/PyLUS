@@ -16,7 +16,9 @@ class Stats(Component):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_construction(self, stream):
-        stream.write(c_bit(False))  # NOTE: unknown
+        stream.write(c_bit(True))  # NOTE: unknown
+        for _ in range(9):
+            stream.write(c_uint32(0))
 
         self.write_data(stream)
 
