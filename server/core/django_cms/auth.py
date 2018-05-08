@@ -81,7 +81,14 @@ class DjangoAuthentication(Plugin):
         """
         user = authenticate(username=username, password=password)
 
-        return user != None
+        if not user:
+            return False
+
+        try:
+            Account.objects.get(user=user)
+            return True
+        except Account.DoesNotExist:
+            return False
 
     def get_new_token(self, uid):
         """
