@@ -13,7 +13,7 @@ class Character(Component):
     Character replica
     """
     # TODO: use **kwargs instead of a thousand arguments
-    def __init__(self, vehicle=False, vehicle_id=0, level=False, level_num=1, hair_color=0, hair_style=0, shirt_color=0,
+    def __init__(self, vehicle=False, vehicle_id=0, level=True, level_num=1, hair_color=0, hair_style=0, shirt_color=0,
                  pants_color=0, eyebrows=0, eyes=0, mouth=0, account_id=1, llog=0, lego_score=0, free_to_play=False,
                  currency_collected=0, bricks_collected=0, smashables_smashed=0, quick_builds=0, enemies_smashed=0,
                  rockets_used=0, missions_completed=0, pets_tamed=0, imagination_powerups=0, life_powerups=0, armor_powerups=0,

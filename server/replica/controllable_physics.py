@@ -13,7 +13,7 @@ class ControllablePhysics(Component):
     Controllable physics component
     """
 
-    def __init__(self, jetpack=False, jetpack_effect=0, player=False, player_x=0, player_y=1, player_z=0, player_rot_x=0,
+    def __init__(self, jetpack=False, jetpack_effect=0, player=True, player_x=0, player_y=1, player_z=0, player_rot_x=0,
                  player_rot_y=0, player_rot_z=0, player_rot_w=0, player_ground=True, player_rail=False, player_velocity=False, player_velocity_x=0,
                  player_velocity_y=0, player_velocity_z=0, player_angular_velocity=False, player_angular_velocity_x=0,
                  player_angular_velocity_y=0, player_angular_velocity_z=0, player_platform=False):
@@ -24,7 +24,11 @@ class ControllablePhysics(Component):
         Writes object data
         """
         stream.write(c_bit(False))  # NOTE: flag is unknown
-        stream.write(c_bit(False))  # NOTE: same as above
+
+        stream.write(c_bit(True))  # NOTE: same as above
+        stream.write(c_float(0))
+        stream.write(c_bit(False))
+
         stream.write(c_bit(False))  # NOTE: same here
 
         stream.write(c_bit(self.player))
@@ -65,7 +69,10 @@ class ControllablePhysics(Component):
             stream.write(c_uint32(self.jetpack_effect))
             stream.write(c_bit(False))
 
-        stream.write(c_bit(False))  # NOTE: flag is unknown
+        stream.write(c_bit(True))  # NOTE: flag is unknown
+
+        for _ in range(7):
+            stream.write(c_uint32(0))
 
         self.write_data(stream)
 

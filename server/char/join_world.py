@@ -5,7 +5,7 @@ Join world
 import zlib
 
 from xml.etree import ElementTree
-from pyraknet.bitstream import WriteStream, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
+from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool
 
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
@@ -65,16 +65,16 @@ class JoinWorld(Plugin):
         char = self.server.handle_until_return('char:characters', uid)[front_char]
 
         char_info = DetailedUserInfo(char.account.user.id, char.name, packet.zone_id, char.id)
-
-        obj_load = GameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
-        player_ready = GameMessage(char.id, GameMessageID.PLAYER_READY.value)
-
         self.server.rnserver.send(char_info, address)
 
+        player = Player(char.id, char.name)
         self.server.repman.add_participant(address)
-        self.server.repman.construct(Player(char.id, char.name))
+        self.server.repman.construct(player, True)
 
+        obj_load = GameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
         self.server.rnserver.send(obj_load, address)
+
+        player_ready = GameMessage(char.id, GameMessageID.PLAYER_READY.value)
         self.server.rnserver.send(player_ready, address)
 
 
@@ -161,8 +161,8 @@ class DetailedUserInfo(Packet):
         ldf = LegoData()
 
         ldf.write('accountID', c_int64(self.account_id))
-        ldf.write('chatmode', c_int32(1))
-        ldf.write('editor_enabled', c_bit(False))
+        ldf.write('chatmode', c_int32(0))
+        ldf.write('editor_enabled', c_bool(False))
         ldf.write('editor_level', c_int32(0))
         ldf.write('gmlevel', c_int32(0))
         ldf.write('levelid', c_int64(self.zone_id))

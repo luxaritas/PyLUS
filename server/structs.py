@@ -6,7 +6,7 @@ from typing import overload
 from xml.etree import ElementTree
 
 from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
-                               c_double, c_uint
+                               c_double, c_uint, c_bool
 
 from enums import PACKET_IDS, PACKET_NAMES
 
@@ -95,21 +95,13 @@ class LegoDataKey(Serializable):
         self.data_type = data_type
 
     def serialize(self, stream):
-        stream.write(c_uint8(len(self.key) * 2))
-
-        for char in self.key:
-            stream.write(char.encode('latin1'))
-            stream.write(b'\0')
+        stream.write(self.key, length_type=c_uint8)
 
         if not self.data_type:
             if isinstance(self.data, str):
                 stream.write(c_uint8(0))
 
-                stream.write(c_uint(len(self.data) * 2))
-
-                for char in self.data:
-                    stream.write(char.encode('latin1'))
-                    stream.write(b'\0')
+                stream.write(self.data, length_type=c_uint)
 
             elif isinstance(self.data, c_int32):
                 stream.write(c_uint8(1))
@@ -119,7 +111,7 @@ class LegoDataKey(Serializable):
                 stream.write(c_uint8(4))
             elif isinstance(self.data, c_uint32):
                 stream.write(c_uint8(5))
-            elif isinstance(self.data, c_bit):
+            elif isinstance(self.data, c_bool):
                 stream.write(c_uint8(7))
             elif isinstance(self.data, c_int64):
                 stream.write(c_uint8(8))
@@ -128,11 +120,7 @@ class LegoDataKey(Serializable):
 
                 txt = '<?xml version="1.0"?>' + ElementTree.tostring(self.data).decode('latin1')
 
-                stream.write(c_uint32(len(txt) * 2))
-
-                for char in txt:
-                    stream.write(char.encode('latin1'))
-                    stream.write(b'\0')
+                stream.write(txt, length_type=c_uint32)
 
             if not isinstance(self.data, str) and not isinstance(self.data, ElementTree.Element):
                 stream.write(self.data)
