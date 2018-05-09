@@ -20,13 +20,15 @@ class Player(Replica):
     """
     Player replica object
     """
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
+    def __init__(self, char):
+        self.id = char.id
+        self.name = char.name
         self.control = ControllablePhysics(player=True)
         self.destructible = Destructible()
         self.stats = Stats()
-        self.char = Character()
+        self.char = Character(shirt_color=char.shirt_color, hair_style=char.hair_style, hair_color=char.hair_color,
+                              pants_color=char.pants_color, eyebrows=char.eyebrows, eyes=char.eyes, account_id=char.account.user.id)
+
         self.inventory = Inventory()
         self.script = Script()
         self.skill = Skill()
