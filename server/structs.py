@@ -118,9 +118,10 @@ class LegoDataKey(Serializable):
             elif isinstance(self.data, ElementTree.Element):
                 stream.write(c_uint8(13))
 
-                txt = '<?xml version="1.0"?>' + ElementTree.tostring(self.data).decode('latin1')
+                txt = b'<?xml version="1.0"?>' + ElementTree.tostring(self.data)
 
-                stream.write(txt, length_type=c_uint32)
+                stream.write(c_uint32(len(txt)))
+                stream.write(txt)
 
             if not isinstance(self.data, str) and not isinstance(self.data, ElementTree.Element):
                 stream.write(self.data)

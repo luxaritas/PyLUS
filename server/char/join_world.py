@@ -67,7 +67,7 @@ class JoinWorld(Plugin):
         char_info = DetailedUserInfo(char.account.user.id, char.name, packet.zone_id, char.id)
         self.server.rnserver.send(char_info, address)
 
-        player = Player(char.id, char.name)
+        player = Player(char)
         self.server.repman.add_participant(address)
         self.server.repman.construct(player, True)
 
@@ -207,7 +207,18 @@ class DetailedUserInfo(Packet):
         xml.end('dest')
         xml.end('obj')
 
-        ldf.write('xmlData', xml.close())
+        xmlData = b'<?xml version="1.0"?><obj v="1"><buff/><skill/><inv><bag>'
+        xmlData += b'<b t="0" m="' + str(self.inventory_space).encode('latin1') + b'" /></bag><items><in>'
+        # TODO: items here
+        xmlData += b'</in></items></inv><mf/><char cc="' + str(self.currency).encode('latin1') + b'"></char>'
+        xmlData += b'<lvl l="' + str(self.level).encode('latin1') + b'"/><flag/><pet/><mis>'
+        # TODO: missions here
+        xmlData += b'</mis><mnt/><dest/></obj>'
+
+        ldf.write('xmlData', xmlData, data_type=13)
+
+        # ldf.write('xmlData', xml.close())
+
         ldf.write('name', self.name)
 
         ldf_stream = WriteStream()

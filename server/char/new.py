@@ -128,7 +128,7 @@ class MinifigureCreateRequest(Packet):
         predef2 = stream.read(c_uint32)
         predef3 = stream.read(c_uint32)
 
-        unknown = stream.read(c_uint8, allocated_length=9)
+        unknown = stream.read(bytes, allocated_length=9)
 
         shirt_color = stream.read(c_uint32)
         shirt_style = stream.read(c_uint32)
