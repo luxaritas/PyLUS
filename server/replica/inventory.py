@@ -21,4 +21,5 @@ class Inventory(Component):
         stream.write(c_bit(True))
         stream.write(c_uint32(0))  # TODO: add items
 
-        stream.write(c_bit(False))  # NOTE: unknown
+        stream.write(c_bit(True))  # NOTE: unknown
+        stream.write(c_uint32(0))  # NOTE: unknown

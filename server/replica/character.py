@@ -21,19 +21,21 @@ class Character(Component):
                  imagination_restored=0, imagination_used=0, distance_driven=0, airborne_time_race_car=0,
                  racing_imagination_powerups=0, racing_imagination_crates_smashed=0, race_car_boosts=0, race_car_wrecks=0,
                  racing_smashables_smashed=0, races_finished=0, first_place_finishes=0, rocket=False, rocket_characters=0,
-                 rocket_modules=[''], glowing_head=False, guild=False, guild_id=0, guild_name=''):
+                 rocket_modules=[''], glowing_head=False, guild=False, guild_id=0, guild_name='', pvp=False, gm=False, gmlevel=0):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def pre_creation(self, stream):
         """
         Writes part 1 of data
         """
+        stream.write(c_bit(True))
+
         stream.write(c_bit(self.vehicle))
 
         if self.vehicle:
-            stream.write(c_bit(True))
             stream.write(c_int64(self.vehicle_id))
-            stream.write(c_uint8(0))  # NOTE: unknown
+
+        stream.write(c_uint8(0))  # NOTE: unknown
 
         stream.write(c_bit(self.level))
 
@@ -42,26 +44,29 @@ class Character(Component):
 
         stream.write(c_bit(True))
         stream.write(c_bit(False))
-        stream.write(c_bit(False))
+        stream.write(c_bit(True))
 
     def post_creation(self, stream):
         """
         Writes part 2 of data
         """
-        stream.write(c_bit(False))  # TODO: add a var for this
+        stream.write(c_bit(True))
+        stream.write(c_bit(self.pvp))
+        stream.write(c_bit(self.gm))
+        stream.write(c_uint8(self.gmlevel))
+        stream.write(c_bit(False))  # NOTE: unknown
+        stream.write(c_uint8(0))  # NOTE: unknown
 
-        stream.write(c_bit(self.glowing_head))
-
-        if self.glowing_head:
-            stream.write(c_uint32(1))
+        stream.write(c_bit(True))
+        stream.write(c_uint32(1 if self.glowing_head else 0))
 
         stream.write(c_bit(self.guild))
 
         if self.guild:
             stream.write(c_int64(self.guild_id))
             stream.write(self.guild_name, allocated_length=33)
-            stream.write(c_bit(False))  # NOTE: unknown
-            stream.write(c_int32(0))  # NOTE: unknown
+            stream.write(c_bit(True))  # NOTE: unknown
+            stream.write(c_int32(-1))  # NOTE: unknown
 
     def write_construction(self, stream):
         self.pre_creation(stream)
