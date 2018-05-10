@@ -75,7 +75,7 @@ class DjangoAuthentication(Plugin):
         except Account.DoesNotExist:
             return False
 
-    def check_credentials(self, username, password):
+    def check_credentials(self, username, password, address):
         """
         Checks credentials
         """
@@ -86,9 +86,10 @@ class DjangoAuthentication(Plugin):
 
         try:
             Account.objects.get(user=user)
-            return True
         except Account.DoesNotExist:
-            return False
+            self.create_game_account(username, password, address)
+
+        return True
 
     def get_new_token(self, uid):
         """

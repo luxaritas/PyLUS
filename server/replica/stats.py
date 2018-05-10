@@ -11,8 +11,8 @@ class Stats(Component):
     """
     Stats component class
     """
-    def __init__(self, stats=True, health=100, max_health=100, armor=0, max_armor=100, imagination=0,
-                 max_imagination=100, factions=[1], smashable=False):
+    def __init__(self, stats=True, health=4, max_health=4, armor=0, max_armor=4, imagination=0,
+                 max_imagination=4, factions=[1], smashable=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_construction(self, stream):
@@ -30,11 +30,13 @@ class Stats(Component):
                 stream.write(c_bit(False))  # NOTE: unknown
                 stream.write(c_bit(False))  # NOTE: same as above
 
+        stream.write(c_bit(True))
         stream.write(c_bit(False))
 
     def serialize(self, stream):
         self.write_data(stream)
-        stream.write(c_bit(False))  # NOTE: unknown flag
+        stream.write(c_bit(True))  # NOTE: unknown flag
+        stream.write(c_bit(False))
 
     def write_data(self, stream):
         stream.write(c_bit(self.stats))
@@ -50,7 +52,7 @@ class Stats(Component):
             stream.write(c_float(self.max_imagination))
 
             stream.write(c_uint32(0))  # NOTE: unknown
-            stream.write(c_bit(False))
+            stream.write(c_bit(True))
             stream.write(c_bit(False))
             stream.write(c_bit(False))
 

@@ -35,7 +35,7 @@ class Login(Plugin):
         """
         token = ''
 
-        if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password):
+        if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password, address):
             auth_status = 'bad_credentials'
             uid = None
         else:

@@ -29,7 +29,8 @@ class ControllablePhysics(Component):
         stream.write(c_float(0))
         stream.write(c_bit(False))
 
-        stream.write(c_bit(False))  # NOTE: same here
+        stream.write(c_bit(True))  # NOTE: same here
+        stream.write(c_bit(False))
 
         stream.write(c_bit(self.player))
 
