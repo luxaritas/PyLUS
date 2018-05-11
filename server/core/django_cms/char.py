@@ -2,9 +2,9 @@
 Character
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-import bcrypt
+import random
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -36,7 +36,8 @@ class DjangoCharacterList(Plugin):
         """
         account = Account.objects.get(user__pk=uid)
 
-        Character.objects.create(slot=slot,
+        Character.objects.create(id=random.randint(1000000000000000000, 9999999999999999999),
+                                 slot=slot,
                                  account=account,
                                  name=name,
                                  unapproved_name=unapproved_name,

@@ -17,6 +17,7 @@ class Account(models.Model):
     front_character = models.SmallIntegerField()
 
 class Character(models.Model):
+    id = models.BigIntegerField(primary_key=True)
     slot = models.SmallIntegerField()
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=33)
