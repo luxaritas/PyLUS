@@ -98,8 +98,9 @@ class DjangoAuthentication(Plugin):
         account = Account.objects.get(user__pk=uid)
         token = secrets.token_urlsafe(24)
 
-        hashed = bcrypt.hashpw(token.encode('UTF-8'), bcrypt.gensalt())
-        account.session.token = hashed.decode('UTF-8')
+        hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
+
+        account.session.token = hashed.decode('latin1')
         account.session.save()
         account.save()
         return token
@@ -116,7 +117,7 @@ class DjangoAuthentication(Plugin):
             session.delete()
             return False
 
-        if bcrypt.checkpw(token.encode('UTF-8'), session.token.encode('UTF-8')):
+        if bcrypt.checkpw(token.encode('latin1'), session.token.encode('latin1')):
             return True
 
         return False

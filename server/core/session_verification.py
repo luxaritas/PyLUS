@@ -33,11 +33,8 @@ class SessionVerification(Plugin):
         """
         Verifies a session
         """
-        pass
-
-        # TODO: fix token checking
-        # if not self.server.handle_until_value('auth:check_token', True, packet.username, packet.session_key):
-        #     self.server.rnserver.close_connection(address)
+        if not self.server.handle_until_value('auth:check_token', True, packet.username, packet.session_key):
+            self.server.rnserver.close_connection(address)
 
     def allow_packet(self, data, address):
         """
