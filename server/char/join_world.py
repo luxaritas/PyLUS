@@ -5,7 +5,7 @@ Join world
 import zlib
 
 from xml.etree import ElementTree
-from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool
+from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
 
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
@@ -160,15 +160,15 @@ class DetailedUserInfo(Packet):
 
         ldf = LegoData()
 
-        ldf.write('accountID', c_int64(self.account_id))
-        ldf.write('chatmode', c_int32(0))
-        ldf.write('editor_enabled', c_bool(False))
-        ldf.write('editor_level', c_int32(0))
-        ldf.write('gmlevel', c_int32(0))
-        ldf.write('levelid', c_int64(self.zone_id))
-        ldf.write('objid', c_int64(self.objid), data_type=9)
-        ldf.write('reputation', c_int64(100))
-        ldf.write('template', c_int32(1))
+        ldf.write('accountID', self.account_id, data_type=c_int64)
+        ldf.write('chatmode', 0, data_type=c_int32)
+        ldf.write('editor_enabled', False, data_type=c_bool)
+        ldf.write('editor_level', 0, data_type=c_int32)
+        ldf.write('gmlevel', 0, data_type=c_int32)
+        ldf.write('levelid', self.zone_id, data_type=c_int64)
+        ldf.write('objid', self.objid, data_type=c_int64, data_num=9)
+        ldf.write('reputation', 100, data_type=c_int64)
+        ldf.write('template', 1, data_type=c_int32)
 
         xml = ElementTree.TreeBuilder()
 
@@ -207,25 +207,15 @@ class DetailedUserInfo(Packet):
         xml.end('dest')
         xml.end('obj')
 
-        xmlData = b'<?xml version="1.0"?><obj v="1"><buff/><skill/><inv><bag>'
-        xmlData += b'<b t="0" m="' + str(self.inventory_space).encode('latin1') + b'" /></bag><items><in>'
-        # TODO: items here
-        xmlData += b'</in></items></inv><mf/><char cc="' + str(self.currency).encode('latin1') + b'"></char>'
-        xmlData += b'<lvl l="' + str(self.level).encode('latin1') + b'"/><flag/><pet/><mis>'
-        # TODO: missions here
-        xmlData += b'</mis><mnt/><dest/></obj>'
+        ldf.write('xmlData', xml.close())
 
-        ldf.write('xmlData', xmlData, data_type=13)
-
-        # ldf.write('xmlData', xml.close())
-
-        ldf.write('name', self.name)
+        ldf.write('name', self.name, data_type=str)
 
         ldf_stream = WriteStream()
         ldf_stream.write(ldf)
 
         ldf_bytes = bytes(ldf_stream)
 
-        stream.write(c_uint32(len(ldf_bytes) + 5))
+        stream.write(c_uint32(len(ldf_bytes) + 1))
         stream.write(c_bool(False))
         stream.write(ldf_bytes)

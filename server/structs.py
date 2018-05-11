@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
                                c_double, c_uint, c_bool
 
-from enums import PACKET_IDS, PACKET_NAMES
+from enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES
 
 
 class CString(Serializable):
@@ -89,44 +89,36 @@ class LegoDataKey(Serializable):
     """
     LDF key serializable
     """
-    def __init__(self, key, data, data_type=None):
+    def __init__(self, key, data, data_type, data_num=None):
         self.key = key
         self.data = data
         self.data_type = data_type
+        self.data_num = data_num
 
     def serialize(self, stream):
-        stream.write(self.key, length_type=c_uint8)
+        stream.write(c_uint8(len(self.key) * 2))
 
-        if not self.data_type:
-            if isinstance(self.data, str):
-                stream.write(c_uint8(0))
+        for char in self.key:
+            stream.write(char.encode('latin1'))
+            stream.write(b'\0')
 
-                stream.write(self.data, length_type=c_uint)
-
-            elif isinstance(self.data, c_int32):
-                stream.write(c_uint8(1))
-            elif isinstance(self.data, c_float):
-                stream.write(c_uint8(3))
-            elif isinstance(self.data, c_double):
-                stream.write(c_uint8(4))
-            elif isinstance(self.data, c_uint32):
-                stream.write(c_uint8(5))
-            elif isinstance(self.data, c_bool):
-                stream.write(c_uint8(7))
-            elif isinstance(self.data, c_int64):
-                stream.write(c_uint8(8))
-            elif isinstance(self.data, ElementTree.Element):
+        if not self.data_num:
+            if isinstance(self.data, ElementTree.Element):
                 stream.write(c_uint8(13))
 
-                txt = b'<?xml version="1.0"?>' + ElementTree.tostring(self.data)
+                txt = b'<?xml version="1.0">' + ElementTree.tostring(self.data)
 
                 stream.write(c_uint32(len(txt)))
                 stream.write(txt)
+            else:
+                stream.write(c_uint8(LEGO_DATA_TYPES[self.data_type]))
 
-            if not isinstance(self.data, str) and not isinstance(self.data, ElementTree.Element):
-                stream.write(self.data)
+                if self.data_type == str:
+                    stream.write(self.data, length_type=c_uint)
+                else:
+                    stream.write(self.data_type(self.data))
         else:
-            stream.write(c_uint8(self.data_type))
+            stream.write(c_uint8(self.data_num))
             stream.write(self.data)
 
     @classmethod
@@ -141,7 +133,7 @@ class LegoData(Serializable):
     def __init__(self):
         self.keys = []
 
-    def write(self, key, data, data_type=None):
+    def write(self, key, data, data_type=None, data_num=None):
         ldf_key = LegoDataKey(key, data, data_type)
 
         self.keys.append(ldf_key)
