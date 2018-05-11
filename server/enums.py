@@ -4,6 +4,19 @@ Enums
 
 from enum import IntEnum
 
+from pyraknet.bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
+
+
+LEGO_DATA_TYPES = {
+    str: 0,
+    c_int32: 1,
+    c_float: 3,
+    c_double: 4,
+    c_uint32: 5,
+    c_bool: 7,
+    c_int64: 8,
+}
+
 
 ZONE_CHECKSUMS = {
     1000: 0x20b8087c,
@@ -19,6 +32,7 @@ class GameMessageID(IntEnum):
     Game messages
     """
     DONE_LOADING_OBJECTS = 0x066a
+    NOTIFY_CLIENT_FLAG_CHANGE = 0x1d8
     PLAYER_READY = 0x01fd
 
 

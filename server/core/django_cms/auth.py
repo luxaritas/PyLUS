@@ -99,7 +99,7 @@ class DjangoAuthentication(Plugin):
         token = secrets.token_urlsafe(24)
 
         hashed = bcrypt.hashpw(token.encode('UTF-8'), bcrypt.gensalt())
-        account.session.token = hashed.decode()
+        account.session.token = hashed.decode('UTF-8')
         account.session.save()
         account.save()
         return token
@@ -116,7 +116,7 @@ class DjangoAuthentication(Plugin):
             session.delete()
             return False
 
-        if bcrypt.checkpw(token.encode(), session.token.encode()):
+        if bcrypt.checkpw(token.encode('UTF-8'), session.token.encode('UTF-8')):
             return True
 
         return False
@@ -150,8 +150,11 @@ class DjangoAuthentication(Plugin):
         """
         Returns a session user ID
         """
-        account = Account.objects.get(session__address=address[0], session__port=address[1])
-        return account.user.pk
+        try:
+            account = Account.objects.get(session__address=address[0], session__port=address[1])
+            return account.user.pk
+        except Account.DoesNotExist:
+            return None
 
     def get_lego_club(self, uid):
         """
