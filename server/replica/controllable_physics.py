@@ -6,6 +6,7 @@ from pyraknet.bitstream import c_bit, c_uint32, c_float, c_int64
 from pyraknet.replicamanager import Replica
 
 from replica.component import Component
+from structs import Vector3, Vector4
 
 
 class ControllablePhysics(Component):
@@ -13,10 +14,9 @@ class ControllablePhysics(Component):
     Controllable physics component
     """
 
-    def __init__(self, jetpack=False, jetpack_effect=0, player=True, player_x=0, player_y=1, player_z=0, player_rot_x=0,
-                 player_rot_y=0, player_rot_z=0, player_rot_w=0, player_ground=True, player_rail=False, player_velocity=False, player_velocity_x=0,
-                 player_velocity_y=0, player_velocity_z=0, player_angular_velocity=False, player_angular_velocity_x=0,
-                 player_angular_velocity_y=0, player_angular_velocity_z=0, player_platform=False):
+    def __init__(self, jetpack=False, jetpack_effect=0, player=True, player_pos=Vector3(0, 0, 0), player_rot=Vector4(0, 0, 0, 0),
+                 player_ground=True, player_rail=False, player_velocity=False, player_velocity_vec=Vector3(0, 0, 0),
+                 player_angular_velocity=False, player_angular_velocity_vec=Vector3(0, 0, 0), player_platform=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_data(self, stream):
@@ -35,14 +35,14 @@ class ControllablePhysics(Component):
         stream.write(c_bit(self.player))
 
         if self.player:
-            stream.write(c_float(self.player_x))
-            stream.write(c_float(self.player_y))
-            stream.write(c_float(self.player_z))
+            stream.write(c_float(self.player_pos.x))
+            stream.write(c_float(self.player_pos.y))
+            stream.write(c_float(self.player_pos.z))
 
-            stream.write(c_float(self.player_rot_x))
-            stream.write(c_float(self.player_rot_y))
-            stream.write(c_float(self.player_rot_z))
-            stream.write(c_float(self.player_rot_w))
+            stream.write(c_float(self.player_rot.x))
+            stream.write(c_float(self.player_rot.y))
+            stream.write(c_float(self.player_rot.z))
+            stream.write(c_float(self.player_rot.w))
 
             stream.write(c_bit(self.player_ground))
             stream.write(c_bit(self.player_rail))
@@ -50,16 +50,16 @@ class ControllablePhysics(Component):
             stream.write(c_bit(self.player_velocity))
 
             if self.player_velocity:
-                stream.write(c_float(self.player_velocity_x))
-                stream.write(c_float(self.player_velocity_y))
-                stream.write(c_float(self.player_velocity_z))
+                stream.write(c_float(self.player_velocity_vec.x))
+                stream.write(c_float(self.player_velocity_vec.y))
+                stream.write(c_float(self.player_velocity_vec.z))
 
             stream.write(c_bit(self.player_angular_velocity))
 
             if self.player_angular_velocity:
-                stream.write(c_float(self.player_angular_velocity_x))
-                stream.write(c_float(self.player_angular_velocity_y))
-                stream.write(c_float(self.player.angular_velocity_z))
+                stream.write(c_float(self.player_angular_velocity_vec.x))
+                stream.write(c_float(self.player_angular_velocity_vec.y))
+                stream.write(c_float(self.player.angular_velocity_vec.z))
 
             stream.write(c_bit(False))  # NOTE: unknown flag
 

@@ -15,15 +15,17 @@ from replica.skill import Skill
 from replica.render import Render
 from replica.component107 import Component107
 
+from structs import Vector3
+
 
 class Player(Replica):
     """
     Player replica object
     """
-    def __init__(self, char):
+    def __init__(self, char, pos=Vector3(0, 0, 0)):
         self.id = char.id
         self.name = char.name
-        self.control = ControllablePhysics(player=True)
+        self.control = ControllablePhysics(player=True, player_pos=pos)
         self.destructible = Destructible()
         self.stats = Stats()
         self.char = Character(shirt_color=char.shirt_color, hair_style=char.hair_style, hair_color=char.hair_color,
