@@ -10,8 +10,8 @@ from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_u
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from plugin import Plugin, Action
-from enums import ZONE_CHECKSUMS, GameMessageID
-from structs import GameMessage, Packet, LegoData
+from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, GameMessageID
+from structs import GameMessage, Packet, LegoData, Vector3
 
 
 class JoinWorld(Plugin):
@@ -67,7 +67,7 @@ class JoinWorld(Plugin):
         char_info = DetailedUserInfo(char.account.user.id, char.name, packet.zone_id, char.id)
         self.server.rnserver.send(char_info, address)
 
-        player = Player(char)
+        player = Player(char, Vector3.from_array(ZONE_SPAWNPOINTS[packet.zone_id]))
         self.server.repman.add_participant(address)
         self.server.repman.construct(player, True)
 
@@ -215,7 +215,11 @@ class DetailedUserInfo(Packet):
         ldf_stream.write(ldf)
 
         ldf_bytes = bytes(ldf_stream)
+        compressed = zlib.compress(ldf_bytes)
 
-        stream.write(c_uint32(len(ldf_bytes) + 1))
-        stream.write(c_bool(False))
-        stream.write(ldf_bytes)
+        stream.write(c_uint32(len(compressed) + 9))
+        stream.write(c_bool(True))
+        stream.write(c_uint32(len(ldf_bytes)))
+        stream.write(c_uint32(len(compressed)))
+
+        stream.write(compressed)
