@@ -62,6 +62,4 @@ class SessionInfo(Packet):
         """
         return cls(username=stream.read(str, allocated_length=33),
                    session_key=stream.read(str, allocated_length=33),
-                   # unknown=stream.read(CString('', allocated_length=32)),
-                   unknown=stream.read(c_ubyte, allocated_length=16),  # NOTE: this seems to work, while reading a CString doesn't
-                   unknown1=stream.read(c_byte))
+                   unknown=stream.read(bytes, allocated_length=33))
