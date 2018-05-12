@@ -2,14 +2,9 @@
 Auth
 """
 
-import secrets
-
-from datetime import datetime, timedelta
-
-import bcrypt
 from django.contrib.auth import authenticate
 
-from cms.game.models import Session, Account
+from cms.game.models import Account
 from plugin import Plugin, Action
 
 class DjangoAuthentication(Plugin):
@@ -22,11 +17,6 @@ class DjangoAuthentication(Plugin):
         """
         return [
             Action('auth:login_user', self.login_user, 10),
-            Action('auth:token', self.get_new_token, 10),
-            Action('auth:check_token', self.check_token, 10),
-            Action('auth:get_user_id', self.get_user_id, 10),
-            Action('auth:get_address', self.get_address, 10),
-            Action('auth:set_address', self.set_address, 10),
             #Action('auth:check_banned', self.check_banned, 10),
             #Action('auth:check_permission', self.check_permission, 10),
             #Action('auth:check_locked', self.check_locked, 10),
@@ -39,7 +29,7 @@ class DjangoAuthentication(Plugin):
             Action('auth:has_game_account', self.has_game_account, 10),
         ]
 
-    def create_game_account(self, username, password, address, lego_club=False):
+    def create_game_account(self, username, password, lego_club=False):
         """
         Creates a game account for a user
         """
@@ -48,15 +38,7 @@ class DjangoAuthentication(Plugin):
         if not user:
             return None
 
-        token = secrets.token_urlsafe(24).encode('UTF-8')
-
-        session = Session.objects.create(token=bcrypt.hashpw(token, bcrypt.gensalt()).decode(),
-                                         address=address[0],
-                                         port=address[1],
-                                         objid=0)
-
         account = Account.objects.create(user=user,
-                                         session=session,
                                          lego_club=lego_club,
                                          free_to_play=False,
                                          new_subscriber=True,
@@ -74,7 +56,7 @@ class DjangoAuthentication(Plugin):
         except Account.DoesNotExist:
             return False
 
-    def login_user(self, username, password, address):
+    def login_user(self, username, password):
         """
         Checks credentials
         """
@@ -86,67 +68,9 @@ class DjangoAuthentication(Plugin):
         try:
             Account.objects.get(user=user)
         except Account.DoesNotExist:
-            self.create_game_account(username, password, address)
+            self.create_game_account(username, password)
 
         return user.id
-
-    def get_new_token(self, uid):
-        """
-        Returns a new token
-        """
-        account = Account.objects.get(user__pk=uid)
-        token = secrets.token_urlsafe(24)
-
-        hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
-
-        account.session.token = hashed.decode('latin1')
-        account.session.save()
-        account.save()
-        return token
-
-    def check_token(self, username, token):
-        """
-        Checks a token
-        """
-        account = Account.objects.get(user__username=username)
-        session = account.session
-
-        # Session expired
-        if datetime.utcnow() - session.created > timedelta(days=1):
-            session.delete()
-            return False
-
-        if bcrypt.checkpw(token.encode('latin1'), session.token.encode('latin1')):
-            return True
-
-        return False
-
-    def set_address(self, uid, address):
-        """
-        Sets a session address
-        """
-        account = Account.objects.get(user__pk=uid)
-        account.session.address = address[0]
-        account.session.port = address[1]
-        account.session.save()
-        account.save()
-
-    def get_address(self, uid):
-        """
-        Returns a session address
-        """
-        account = Account.objects.get(user__pk=uid)
-        return (account.session.address, account.session.port)
-
-    def get_user_id(self, address):
-        """
-        Returns a session user ID
-        """
-        try:
-            account = Account.objects.get(session__address=address[0], session__port=address[1])
-            return account.user.pk
-        except Account.DoesNotExist:
-            return None
 
     def get_lego_club(self, uid):
         """

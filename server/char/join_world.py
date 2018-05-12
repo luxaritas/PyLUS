@@ -61,7 +61,7 @@ class JoinWorld(Plugin):
         """
         Handles the clientside load complete packet
         """
-        uid = self.server.handle_until_return('auth:get_user_id', address)
+        uid = self.server.handle_until_return('session:get_session', address).uid
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         char = self.server.handle_until_return('char:characters', uid)[front_char]
         luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
