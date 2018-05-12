@@ -3,8 +3,10 @@ Join world
 """
 
 import zlib
+import random
 
 from xml.etree import ElementTree
+
 from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
 
 from char.list import CharacterListResponse, Character as Minifigure
@@ -47,7 +49,7 @@ class JoinWorld(Plugin):
         char = self.server.handle_until_return('char:get_character', char_id)
         luz = self.server.handle_until_return('world:get_zone_luz', char.last_zone)
 
-        res = WorldInfo(char.last_zone,
+        res = WorldInfo(1000 if char.last_zone == 0 else char.last_zone,
                         0,
                         0,
                         ZONE_CHECKSUMS[char.last_zone],
@@ -71,17 +73,18 @@ class JoinWorld(Plugin):
 
         self.server.repman.add_participant(address)
 
-        for obj in luz.scenes[0].objects:
-            replica = BaseData(obj.objid, obj.lot, obj.name, components=obj.components)
-            self.server.repman.construct(replica, True)
+        for scene in luz.scenes:  # NOTE: is this how you should do it?
+            for obj in scene.objects:
+                replica = BaseData(random.randint(100000000000000000, 999999999999999999), obj.lot, obj.name, components=obj.components)
+                self.server.repman.construct(replica, True)
 
         player = Player(char, luz.spawnpoint, luz.spawnpoint_rot)
         self.server.repman.construct(player, True)
 
-        obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
+        obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS)
         self.server.rnserver.send(obj_load, address)
 
-        player_ready = ServerGameMessage(char.id, GameMessageID.PLAYER_READY.value)
+        player_ready = ServerGameMessage(char.id, GameMessageID.PLAYER_READY)
         self.server.rnserver.send(player_ready, address)
 
 
