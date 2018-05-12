@@ -34,16 +34,12 @@ class Login(Plugin):
         Handles a login request
         """
         token = ''
+        uid = self.server.handle_until_return('auth:login_user', packet.username, packet.password, address)
 
-        if not self.server.handle_until_value('auth:check_credentials', True, packet.username, packet.password, address):
+        if not uid:
             auth_status = 'bad_credentials'
             uid = None
         else:
-            uid = self.server.handle_until_return('auth:get_user_id_by_login', packet.username, packet.password)
-
-            # if not self.server.handle_until_value('auth:has_game_account', True, uid):
-            #     self.server.handle('auth:create_game_account', packet.username, packet.password, address)
-
             self.server.handle('auth:set_address', uid, address)
 
             if self.server.handle_until_value('auth:check_banned', True, uid, address):

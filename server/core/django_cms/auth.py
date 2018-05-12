@@ -21,7 +21,7 @@ class DjangoAuthentication(Plugin):
         Returns all actions
         """
         return [
-            Action('auth:check_credentials', self.check_credentials, 10),
+            Action('auth:login_user', self.login_user, 10),
             Action('auth:token', self.get_new_token, 10),
             Action('auth:check_token', self.check_token, 10),
             Action('auth:get_user_id', self.get_user_id, 10),
@@ -37,7 +37,6 @@ class DjangoAuthentication(Plugin):
             Action('auth:lego_club', self.get_lego_club, 10),
             Action('auth:create_game_account', self.create_game_account, 10),
             Action('auth:has_game_account', self.has_game_account, 10),
-            Action('auth:get_user_id_by_login', self.get_user_id_by_login, 10),
         ]
 
     def create_game_account(self, username, password, address, lego_club=False):
@@ -75,21 +74,21 @@ class DjangoAuthentication(Plugin):
         except Account.DoesNotExist:
             return False
 
-    def check_credentials(self, username, password, address):
+    def login_user(self, username, password, address):
         """
         Checks credentials
         """
         user = authenticate(username=username, password=password)
 
         if not user:
-            return False
+            return None
 
         try:
             Account.objects.get(user=user)
         except Account.DoesNotExist:
             self.create_game_account(username, password, address)
 
-        return True
+        return user.id
 
     def get_new_token(self, uid):
         """
@@ -137,15 +136,7 @@ class DjangoAuthentication(Plugin):
         Returns a session address
         """
         account = Account.objects.get(user__pk=uid)
-        return account.session.address
-
-    def get_user_id_by_login(self, username, password):
-        """
-        Returns a user ID
-        """
-        user = authenticate(username=username, password=password)
-
-        return user.pk if user else None
+        return (account.session.address, account.session.port)
 
     def get_user_id(self, address):
         """
