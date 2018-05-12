@@ -9,9 +9,11 @@ from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_u
 
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
+from replica.base_data import BaseData
 from plugin import Plugin, Action
-from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, GameMessageID
+from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
 from structs import ServerGameMessage, Packet, LegoData, Vector3
+from luzreader import LUZReader
 
 
 class JoinWorld(Plugin):
@@ -43,15 +45,14 @@ class JoinWorld(Plugin):
         char_id = packet.character_id
 
         char = self.server.handle_until_return('char:get_character', char_id)
+        luz = self.server.handle_until_return('world:get_zone_luz', char.last_zone)
 
         res = WorldInfo(char.last_zone,
                         0,
                         0,
                         ZONE_CHECKSUMS[char.last_zone],
                         0,
-                        0,
-                        1,
-                        0,
+                        luz.spawnpoint,
                         0)
 
         self.server.rnserver.send(res, address)
@@ -63,12 +64,18 @@ class JoinWorld(Plugin):
         uid = self.server.handle_until_return('auth:get_user_id', address)
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         char = self.server.handle_until_return('char:characters', uid)[front_char]
+        luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
 
         char_info = DetailedUserInfo(char.account.user.id, char.name, packet.zone_id, char.id)
         self.server.rnserver.send(char_info, address)
 
-        player = Player(char, Vector3.from_array(ZONE_SPAWNPOINTS[packet.zone_id]))
         self.server.repman.add_participant(address)
+
+        for obj in luz.scenes[0].objects:
+            replica = BaseData(obj.objid, obj.lot, obj.name, components=obj.components)
+            self.server.repman.construct(replica, True)
+
+        player = Player(char, luz.spawnpoint, luz.spawnpoint_rot)
         self.server.repman.construct(player, True)
 
         obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
@@ -124,7 +131,7 @@ class WorldInfo(Packet):
     """
     packet_name = 'world_info'
 
-    def __init__(self, zone_id, map_instance, map_clone, map_checksum, unknown1, pos_x, pos_y, pos_z, is_activity):
+    def __init__(self, zone_id, map_instance, map_clone, map_checksum, unknown1, pos, is_activity):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
@@ -138,9 +145,9 @@ class WorldInfo(Packet):
         stream.write(c_uint32(self.map_clone))
         stream.write(c_uint32(self.map_checksum))
         stream.write(c_uint16(self.unknown1))
-        stream.write(c_float(self.pos_x))
-        stream.write(c_float(self.pos_y))
-        stream.write(c_float(self.pos_z))
+        stream.write(c_float(self.pos.x))
+        stream.write(c_float(self.pos.y))
+        stream.write(c_float(self.pos.z))
         stream.write(c_uint32(self.is_activity))
 
 class DetailedUserInfo(Packet):

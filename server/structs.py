@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
                                c_double, c_uint, c_bool
 
-from enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES
+from enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES, LDF_VALUE_TYPES
 
 
 class Vector4:
@@ -287,3 +287,28 @@ class ClientGameMessage(Packet):
         data = stream.read_remaining()
 
         return cls(objid, msg_id, data)
+
+
+def parse_ldf(ldf):
+    """
+    Parses the LDF string and returns a dict
+    """
+    d = {}
+
+    for line in ldf.splitlines():
+        arr = line.partition('=')
+        key = arr[0]
+        val = arr[2]
+
+        arr = val.partition(':')
+
+        if not arr[0]:
+            d[key] = None
+        else:
+            val_type = int(arr[0])
+            val = arr[2]
+            val = int(val) == 1 if val_type == 7 else LDF_VALUE_TYPES[val_type](arr[2])
+
+            d[key] = val
+
+    return d

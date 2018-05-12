@@ -7,6 +7,32 @@ from enum import IntEnum
 from pyraknet.bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
 
 
+LDF_VALUE_TYPES = {
+    0: str,
+    1: int,
+    2: int,
+    3: float,
+    4: int,
+    5: int,
+    6: int,
+    7: bool,
+    8: int,
+    9: int,
+    10: str,
+    11: str,
+    12: str,
+    13: str,
+    14: str,
+}
+
+
+ZONE_LUZ = {
+    0: 'luz/nd_space_ship.luz',
+    1000: 'luz/nd_space_ship.luz',
+    1100: 'luz/nd_avant_gardens.luz',
+}
+
+
 LEGO_DATA_TYPES = {
     str: 0,
     c_int32: 1,
