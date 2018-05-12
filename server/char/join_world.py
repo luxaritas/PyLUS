@@ -11,7 +11,7 @@ from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from plugin import Plugin, Action
 from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, GameMessageID
-from structs import GameMessage, Packet, LegoData, Vector3
+from structs import ServerGameMessage, Packet, LegoData, Vector3
 
 
 class JoinWorld(Plugin):
@@ -71,10 +71,10 @@ class JoinWorld(Plugin):
         self.server.repman.add_participant(address)
         self.server.repman.construct(player, True)
 
-        obj_load = GameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
+        obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS.value)
         self.server.rnserver.send(obj_load, address)
 
-        player_ready = GameMessage(char.id, GameMessageID.PLAYER_READY.value)
+        player_ready = ServerGameMessage(char.id, GameMessageID.PLAYER_READY.value)
         self.server.rnserver.send(player_ready, address)
 
 

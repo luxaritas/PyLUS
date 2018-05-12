@@ -243,7 +243,7 @@ class Packet(Serializable):
         return cls(header=header, data=stream.read_remaining())
 
 
-class GameMessage(Packet):
+class ServerGameMessage(Packet):
     """
     Game message packet
     """
@@ -253,6 +253,9 @@ class GameMessage(Packet):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
+        """
+        Serializes the game message
+        """
         super().serialize(stream)
 
         stream.write(c_int64(self.objid))
@@ -263,3 +266,24 @@ class GameMessage(Packet):
                 stream.write(self.data)
             else:
                 stream.write(bytes(self.data))
+
+class ClientGameMessage(Packet):
+    """
+    Client game message packet
+    """
+    packet_name = 'client_game_message'
+
+    def __init__(self, objid, message_id, data=None):
+        super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
+
+    @classmethod
+    def deserialize(cls, stream):
+        """
+        Deserializes the game message
+        """
+        objid =  stream.read(c_int64)
+        msg_id = stream.read(c_uint16)
+
+        data = stream.read_remaining()
+
+        return cls(objid, msg_id, data)
