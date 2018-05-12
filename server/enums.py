@@ -19,6 +19,7 @@ LEGO_DATA_TYPES = {
 
 
 ZONE_CHECKSUMS = {
+    0: 0x20b8087c,
     1000: 0x20b8087c,
     1001: 0x26680a3c,
     1100: 0x49525511,
@@ -34,6 +35,7 @@ ZONE_CHECKSUMS = {
 
 
 ZONE_SPAWNPOINTS = {
+    0: [-627.1862, 613.326233, -47.2231674],
     1000: [-627.1862, 613.326233, -47.2231674],
     1001: [-187.2391, 608.2743, 54.5554352],
     1100: [522.9949, 406.040375, 129.992722],
@@ -77,6 +79,7 @@ PACKET_NAMES = {
         0x02: 'character_list_request',
         0x03: 'minifig_create_request',
         0x04: 'join_world_request',
+        0x05: 'client_game_message',
         0x13: 'client_load_complete',
         0x15: 'routed_packet',
         0x16: 'position_update',
