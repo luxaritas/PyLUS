@@ -2,7 +2,10 @@
 Game message handling
 """
 
-from structs import ClientGameMessage
+from pyraknet.bitstream import c_int64, c_int
+
+from enums import GameMessageID
+from structs import ClientGameMessage, ServerGameMessage
 from plugin import Action, Plugin
 
 
@@ -30,4 +33,4 @@ class GameMessageHandler(Plugin):
         """
         Handles the game messages
         """
-        pass
+        print(f'Unhandled game message with ID: {packet.message_id}')

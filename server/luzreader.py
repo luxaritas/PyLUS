@@ -192,7 +192,8 @@ class LUZReader:
 
             assert stream.read(c_uint) == 0
 
-            db_obj = self.conn.execute('SELECT * FROM Objects WHERE id = ?', (lot,)).fetchone()
+            # if lot == 4638:
+            #     continue
 
             obj = LUObject(objid, lot, position, rotation, scale, config_data, self.conn)
             objects.append(obj)

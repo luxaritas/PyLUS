@@ -2,8 +2,6 @@
 Enums
 """
 
-from enum import IntEnum
-
 from pyraknet.bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
 
 
@@ -76,13 +74,15 @@ ZONE_SPAWNPOINTS = {
 }
 
 
-class GameMessageID(IntEnum):
+class GameMessageID:
     """
     Game messages
     """
     DONE_LOADING_OBJECTS = 0x066a
     NOTIFY_CLIENT_FLAG_CHANGE = 0x1d8
     PLAYER_READY = 0x01fd
+    OFFER_MISSION = 0x00f8
+    READY_FOR_UPDATES = 0x0378
 
 
 PACKET_NAMES = {
