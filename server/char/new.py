@@ -33,7 +33,7 @@ class CreateCharacter(Plugin):
         """
         Handles the request
         """
-        uid = self.server.handle_until_return('auth:get_user_id', address)
+        uid = self.server.handle_until_return('session:get_session', address).uid
         status = 0x00
 
         characters = self.server.handle_until_return('char:characters', uid)
@@ -63,7 +63,7 @@ class CreateCharacter(Plugin):
                            packet.eyebrows,  # eyebrows
                            packet.eyes,  # eyes
                            packet.mouth,  # mouth
-                           1100,  # last zone
+                           1000,  # last zone
                            0,  # last instance
                            0,  # last clone
                            0)  # last login

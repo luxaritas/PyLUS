@@ -34,14 +34,12 @@ class Login(Plugin):
         Handles a login request
         """
         token = ''
-        uid = self.server.handle_until_return('auth:login_user', packet.username, packet.password, address)
+        uid = self.server.handle_until_return('auth:login_user', packet.username, packet.password)
 
         if not uid:
             auth_status = 'bad_credentials'
             uid = None
         else:
-            self.server.handle('auth:set_address', uid, address)
-
             if self.server.handle_until_value('auth:check_banned', True, uid, address):
                 auth_status = 'banned'
             elif self.server.handle_until_value('auth:check_permission', False, 'login', uid):
@@ -59,7 +57,7 @@ class Login(Plugin):
                 auth_status = 'success'
 
             if auth_status == 'success':
-                token = self.server.handle_until_return('auth:token', uid)
+                token = self.server.handle_until_return('session:new_session', address, uid)
 
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
 

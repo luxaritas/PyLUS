@@ -33,7 +33,7 @@ class CharacterList(Plugin):
         """
         Handles a char list request
         """
-        uid = self.server.handle_until_return('auth:get_user_id', address)
+        uid = self.server.handle_until_return('session:get_session', address).uid
 
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         characters = self.server.handle_until_return('char:characters', uid)
