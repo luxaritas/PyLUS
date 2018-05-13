@@ -249,7 +249,7 @@ class ServerGameMessage(Packet):
     """
     packet_name = 'server_game_message'
 
-    def __init__(self, objid, message_id, data=None):
+    def __init__(self, objid, message_id, extra_data=None):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
@@ -261,11 +261,11 @@ class ServerGameMessage(Packet):
         stream.write(c_int64(self.objid))
         stream.write(c_uint16(self.message_id))
 
-        if getattr(self, 'data', None):
-            if isinstance(self.data, bytes):
-                stream.write(self.data)
+        if self.extra_data:
+            if isinstance(self.extra_data, bytes):
+                stream.write(self.extra_data)
             else:
-                stream.write(bytes(self.data))
+                stream.write(bytes(self.extra_data))
 
 class ClientGameMessage(Packet):
     """
@@ -273,7 +273,7 @@ class ClientGameMessage(Packet):
     """
     packet_name = 'client_game_message'
 
-    def __init__(self, objid, message_id, data=None):
+    def __init__(self, objid, message_id, extra_data=None):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     @classmethod
@@ -283,7 +283,6 @@ class ClientGameMessage(Packet):
         """
         objid =  stream.read(c_int64)
         msg_id = stream.read(c_uint16)
-
         data = stream.read_remaining()
 
         return cls(objid, msg_id, data)

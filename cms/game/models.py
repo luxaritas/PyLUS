@@ -14,6 +14,7 @@ class Session(models.Model):
     token = models.BinaryField()
     ip = models.GenericIPAddressField()
     port = models.SmallIntegerField()
+    clone = models.IntegerField(null=True)
 
 class Character(models.Model):
     id = models.BigIntegerField(primary_key=True)
