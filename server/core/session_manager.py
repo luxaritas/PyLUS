@@ -7,6 +7,8 @@ import bcrypt
 
 from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
 
+from cms.game.models import Session, Account
+
 from plugin import Plugin, Action, Packet
 
 
@@ -14,8 +16,6 @@ class SessionManager(Plugin):
     """
     Session manager plugin
     """
-    sessions = {}
-
     def actions(self):
         """
         Returns all actions
@@ -42,25 +42,47 @@ class SessionManager(Plugin):
         token = secrets.token_urlsafe(24)
         hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
 
-        self.sessions[address] = Session(uid, hashed)
+        try:
+            account = Account.objects.get(user__id=uid)
+        except Account.DoesNotExist:
+            raise KeyError(f'Invalid user ID: {uid}')
+
+        session = Session(account=account, ip=address[0], port=address[1], token=hashed)
+        session.save()
 
         return token
 
     def get_session(self, address):
         """
-        Returns a user id
+        Returns a user session
         """
-        return self.sessions.get(address)
+        try:
+            return Session.objects.get(ip=address[0], port=address[1])
+        except Session.DoesNotExist:
+            return None
+
+    def check_token(self, token, hashed):
+        """
+        Checks a session token
+        """
+        return bcrypt.checkpw(token if isinstance(token, bytes) else token.encode('latin1'),
+                              hashed if isinstance(hashed, bytes) else hashed.encode('latin1'))
+
+    def destroy_session(self, address):
+        """
+        Destroys a session
+        """
+        Session.objects.filter(ip=address[0], port=address[1]).delete()
 
     def verify_session(self, packet, address):
         """
         Verifies a session
         """
-        if address not in self.sessions or not self.sessions[address].check_token(packet.session_key):
-            self.server.rnserver.close_connection(address)
+        session = self.get_session(address)
 
-        # if not self.server.handle_until_value('auth:check_token', True, packet.username, packet.session_key):
-        #     self.server.rnserver.close_connection(address)
+        if not session or not self.check_token(packet.session_key, session.token):
+            self.destroy_session(address)
+            self.server.rnserver.close_connection(address)
 
     def allow_packet(self, data, address):
         """
@@ -68,7 +90,8 @@ class SessionManager(Plugin):
         """
         packet = Packet.deserialize(ReadStream(data), self.server.packets)
 
-        if not getattr(packet, 'allow_without_session') and address not in self.sessions:
+        if not getattr(packet, 'allow_without_session') and not self.get_session(address):
+            self.destroy_session(address)
             self.server.rnserver.close_connection(address)
 
 
@@ -87,17 +110,3 @@ class SessionInfo(Packet):
         return cls(username=stream.read(str, allocated_length=33),
                    session_key=stream.read(str, allocated_length=33),
                    unknown=stream.read(bytes, allocated_length=33))
-
-class Session:
-    """
-    User session class
-    """
-    def __init__(self, uid, token):
-        self.uid = uid
-        self.token = token
-        self.objid = None
-        self.clone = None
-        self.instance = None
-
-    def check_token(self, token):
-        return bcrypt.checkpw(token.encode('latin1'), self.token)
