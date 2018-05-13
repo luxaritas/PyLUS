@@ -2,7 +2,7 @@
 Game message handling
 """
 
-from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32
+from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8
 
 from enums import GameMessageID
 from structs import ClientGameMessage, ServerGameMessage
@@ -102,3 +102,16 @@ class GameMessageHandler(Plugin):
         print(f'Complete: {complete}')
         print(f'State: {state}')
         print(f'Responder: {responder_objid}')
+
+        session = self.server.handle_until_return('session:get_session', address)
+        char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
+        self.server.handle('char:complete_mission', char.id, mission_id)
+
+        wstr = WriteStream()
+        wstr.write(c_int(mission_id))
+        wstr.write(c_int(1 << 5))
+        wstr.write(c_uint8(0))
+
+        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
+
+        self.server.rnserver.send(msg, address)

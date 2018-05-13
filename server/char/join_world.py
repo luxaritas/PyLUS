@@ -72,17 +72,15 @@ class JoinWorld(Plugin):
         clone = self.server.handle_until_return('world:get_clone', session.clone)
         uid = session.account.user.id
 
-        front_char = self.server.handle_until_return('char:front_char_index', uid)
-        char = self.server.handle_until_return('char:characters', uid)[front_char]
-        # luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
+        char = self.server.handle_until_return('char:characters', uid)[session.account.front_character]
+        missions = self.server.handle_until_return('char:get_missions', char.id)
 
-        char_info = DetailedUserInfo(uid, char.name, packet.zone_id, char.id)
+        char_info = DetailedUserInfo(uid, char.name, packet.zone_id, char.id, missions=list(missions))
         self.server.rnserver.send(char_info, address)
 
         self.server.repman.add_participant(address)
 
         for obj in clone.objects:
-            #objid = random.randint(100000000000000000, 999999999999999999)
             objid = obj.objid
 
             trigger = obj.config.get('renderDisabled')
@@ -93,7 +91,7 @@ class JoinWorld(Plugin):
 
                 components.append(trigger_comp)
 
-            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=obj.components, trigger=trigger)
+            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger)
             self.server.repman.construct(replica, True)
 
         player = Player(char, clone.spawn, clone.spawn_rotation)
@@ -177,7 +175,7 @@ class DetailedUserInfo(Packet):
     """
     packet_name = 'detailed_user_info'
 
-    def __init__(self, account_id, name, zone_id, objid, inventory_space=8, currency=0, level=1):
+    def __init__(self, account_id, name, zone_id, objid, inventory_space=8, currency=0, level=1, missions=[]):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
@@ -227,7 +225,14 @@ class DetailedUserInfo(Packet):
         xml.start('pet', {})
         xml.end('pet')
         xml.start('mis', {})
-        # TODO: missions here
+
+        xml.start('done', {})
+        for mission in [x for x in self.missions if x.state == 8]:
+            xml.start('m', {'cct': str(mission.times_completed),
+                            'id': str(mission.mission), 'cts': str(mission.last_completion)})
+            xml.end('m')
+        xml.end('done')
+
         xml.end('mis')
         xml.start('mnt', {})
         xml.end('mnt')

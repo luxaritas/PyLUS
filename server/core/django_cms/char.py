@@ -8,7 +8,7 @@ import random
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from cms.game.models import Character, Account
+from cms.game.models import Character, Account, Mission
 
 from plugin import Plugin, Action
 
@@ -26,6 +26,8 @@ class DjangoCharacterList(Plugin):
             Action('char:front_char_index', self.get_front_character, 10),
             Action('char:create_character', self.create_character, 10),
             Action('char:get_character', self.get_character, 10),
+            Action('char:get_missions', self.get_missions, 10),
+            Action('char:complete_mission', self.complete_mission, 10),
         ]
 
     def create_character(self, uid, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
@@ -61,7 +63,7 @@ class DjangoCharacterList(Plugin):
         """
         Returns all characters for a user
         """
-        return Character.objects.all().filter(account__user__pk=uid)
+        return Character.objects.filter(account__user__pk=uid)
 
     def get_character(self, char_id):
         """
@@ -75,3 +77,17 @@ class DjangoCharacterList(Plugin):
         """
         account = Account.objects.get(user__pk=uid)
         return account.front_character
+
+    def get_missions(self, char_id):
+        """
+        Returns missions for a character
+        """
+        return Mission.objects.filter(character__id=char_id)
+
+    def complete_mission(self, char_id, mission_id):
+        """
+        Completes a mission
+        """
+        char = Character.objects.get(id=char_id)
+
+        Mission(mission=mission_id, character=char, state=8, times_completed=1, last_completion=0).save()
