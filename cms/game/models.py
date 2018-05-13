@@ -37,3 +37,10 @@ class Character(models.Model):
     last_instance = models.IntegerField()
     last_clone = models.IntegerField()
     last_login = models.IntegerField()
+
+class Mission(models.Model):
+    mission = models.SmallIntegerField()
+    character = models.OneToOneField(Character, on_delete=models.CASCADE)
+    state = models.SmallIntegerField()
+    times_completed = models.SmallIntegerField()
+    last_completion = models.IntegerField()

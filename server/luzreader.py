@@ -199,11 +199,14 @@ class LUZReader:
 
             assert stream.read(c_uint) == 0
 
+            if config_data.get('renderDisabled'):
+                continue
+
             if lot == 176:
                 lot = config_data['spawntemplate']
 
-            if lot == 4638:
-                continue
+            # if lot == 4638:
+            #     continue
 
             obj = LUObject(objid, lot, position, rotation, scale, config_data, self.conn)
             objects.append(obj)
