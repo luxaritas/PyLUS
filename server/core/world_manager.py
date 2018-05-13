@@ -1,18 +1,20 @@
 """
-World loading utilities
+World manager
 """
 
 import random
+import sqlite3
 
 from enums import ZONE_LUZ
 from plugin import Plugin, Action
 from luzreader import LUZReader
 
 
-class WorldUtil(Plugin):
+class WorldManager(Plugin):
     """
-    World loading utlity class
+    World manager class
     """
+    conn = sqlite3.connect('cdclient.sqlite')
     cache = {}
     clones = []
 
@@ -25,6 +27,7 @@ class WorldUtil(Plugin):
             Action('world:join', self.join_world, 10),
             Action('world:get_clone', self.get_clone, 10),
             Action('world:get_clone_id', self.get_clone_id, 10),
+            Action('world:missions_for_lot', self.missions_for_lot, 10),
         ]
 
     def packets(self):
@@ -34,7 +37,7 @@ class WorldUtil(Plugin):
         return []
 
     def get_zone_luz(self, zone):
-        luz = self.cache[zone] if zone in self.cache else LUZReader(ZONE_LUZ[zone])
+        luz = self.cache[zone] if zone in self.cache else LUZReader(ZONE_LUZ[zone], self.conn)
 
         if zone not in self.cache:
             self.cache[zone] = luz
@@ -69,6 +72,12 @@ class WorldUtil(Plugin):
         Returns a clone id
         """
         return self.clones.index(clone)
+
+    def missions_for_lot(self, lot):
+        """
+        Returns missions offered by the LOT
+        """
+        return self.conn.execute('SELECT * FROM Missions WHERE offer_objectID = ?', (lot,)).fetchall()
 
 
 class WorldClone:
