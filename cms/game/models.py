@@ -1,12 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     lego_club = models.BooleanField()
     free_to_play = models.BooleanField()
     new_subscriber = models.BooleanField()
     front_character = models.SmallIntegerField()
+
+class Session(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    token = models.BinaryField()
+    ip = models.GenericIPAddressField()
+    port = models.SmallIntegerField()
 
 class Character(models.Model):
     id = models.BigIntegerField(primary_key=True)

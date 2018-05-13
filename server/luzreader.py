@@ -192,8 +192,8 @@ class LUZReader:
 
             assert stream.read(c_uint) == 0
 
-            # if lot == 4638:
-            #     continue
+            if lot == 4638:
+                continue
 
             obj = LUObject(objid, lot, position, rotation, scale, config_data, self.conn)
             objects.append(obj)

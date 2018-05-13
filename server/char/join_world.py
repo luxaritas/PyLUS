@@ -63,7 +63,7 @@ class JoinWorld(Plugin):
         """
         Handles the clientside load complete packet
         """
-        uid = self.server.handle_until_return('session:get_session', address).uid
+        uid = self.server.handle_until_return('session:get_session', address).account.user.id
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         char = self.server.handle_until_return('char:characters', uid)[front_char]
         luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
@@ -73,9 +73,10 @@ class JoinWorld(Plugin):
 
         self.server.repman.add_participant(address)
 
-        for scene in luz.scenes:  # NOTE: is this how you should do it?
+        for scene in luz.scenes:  # NOTE: should we spawn objects from all scenes?
             for obj in scene.objects:
-                replica = BaseData(random.randint(100000000000000000, 999999999999999999), obj.lot, obj.name, components=obj.components)
+                replica = BaseData(random.randint(100000000000000000, 999999999999999999), obj.lot, obj.name, scale=obj.scale,
+                                   components=obj.components)
                 self.server.repman.construct(replica, True)
 
         player = Player(char, luz.spawnpoint, luz.spawnpoint_rot)
