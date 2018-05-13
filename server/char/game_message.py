@@ -33,15 +33,15 @@ class GameMessageHandler(Plugin):
         """
         Handles the game messages
         """
+        if packet.extra_data:
+            stream = ReadStream(packet.extra_data)
 
         if packet.message_id == GameMessageID.REQUEST_USE:
-            stream = ReadStream(packet.extra_data)
-
             self.request_use(packet, address, stream)
         elif packet.message_id == GameMessageID.MISSION_DIALOGUE_OK:
-            stream = ReadStream(packet.extra_data)
-
             self.mission_accept(packet, address, stream)
+        elif packet.message_id == GameMessageID.REQUEST_LINKED_MISSION:
+            self.request_linked_mission(packet, address, stream)
         elif packet.message_id == 888:
             pass
         else:
@@ -68,10 +68,26 @@ class GameMessageHandler(Plugin):
 
         obj = [x for x in clone.objects if x.objid == objid][0]
 
-        if obj.lot == 14349:
-            msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(1727) + c_int64(objid))
+        missions = self.server.handle_until_return('world:missions_for_lot', obj.lot)
+
+        if missions:
+            mission = missions[0]
+
+            msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
 
             self.server.rnserver.send(msg, address)
+
+    def request_linked_mission(self, packet, address, stream):
+        """
+        Handles the request linked mission game message
+        """
+        objid = stream.read(c_int64)
+        mission = stream.read(c_int)
+        offered = stream.read(c_bit)
+
+        print(f'Request for linked mission {mission}')
+        print(f'Object ID: {objid}')
+        print(f'Offered: {offered}')
 
     def mission_accept(self, packet, address, stream):
         """
@@ -86,12 +102,3 @@ class GameMessageHandler(Plugin):
         print(f'Complete: {complete}')
         print(f'State: {state}')
         print(f'Responder: {responder_objid}')
-
-        wstream = WriteStream()
-        wstream.write(c_int(mission_id))
-        wstream.write(c_int(state))
-        wstream.write(c_bit(False))
-        wstream.write(c_bit(False))
-
-        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION, wstream)
-        self.server.rnserver.send(msg, address)

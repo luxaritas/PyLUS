@@ -105,8 +105,8 @@ class LUZReader:
     """
     LEGO Universe Zone file reader
     """
-    def __init__(self, file):
-        self.conn = sqlite3.connect('cdclient.sqlite')
+    def __init__(self, file, conn=None):
+        self.conn = conn or sqlite3.connect('cdclient.sqlite')
         self.scenes = []
 
         with open(file, 'rb') as file:

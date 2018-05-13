@@ -56,7 +56,7 @@ class JoinWorld(Plugin):
 
         res = WorldInfo(1000 if char.last_zone == 0 else char.last_zone,
                         0,
-                        0,
+                        clone_id,
                         ZONE_CHECKSUMS[char.last_zone],
                         0,
                         clone.spawn,
