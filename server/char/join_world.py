@@ -12,6 +12,7 @@ from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_u
 from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from replica.base_data import BaseData
+from replica.trigger import Trigger
 from plugin import Plugin, Action
 from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
 from structs import ServerGameMessage, Packet, LegoData, Vector3
@@ -47,14 +48,18 @@ class JoinWorld(Plugin):
         char_id = packet.character_id
 
         char = self.server.handle_until_return('char:get_character', char_id)
-        luz = self.server.handle_until_return('world:get_zone_luz', char.last_zone)
+
+        clone = self.server.handle_until_return('world:join', char.account.user.id, char_id, char.last_zone)
+        clone_id = self.server.handle_until_return('world:get_clone_id', clone)
+
+        self.server.handle('session:set_clone', address, clone_id)
 
         res = WorldInfo(1000 if char.last_zone == 0 else char.last_zone,
                         0,
                         0,
                         ZONE_CHECKSUMS[char.last_zone],
                         0,
-                        luz.spawnpoint,
+                        clone.spawn,
                         0)
 
         self.server.rnserver.send(res, address)
@@ -63,23 +68,35 @@ class JoinWorld(Plugin):
         """
         Handles the clientside load complete packet
         """
-        uid = self.server.handle_until_return('session:get_session', address).account.user.id
+        session = self.server.handle_until_return('session:get_session', address)
+        clone = self.server.handle_until_return('world:get_clone', session.clone)
+        uid = session.account.user.id
+
         front_char = self.server.handle_until_return('char:front_char_index', uid)
         char = self.server.handle_until_return('char:characters', uid)[front_char]
-        luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
+        # luz = self.server.handle_until_return('world:get_zone_luz', packet.zone_id)
 
-        char_info = DetailedUserInfo(char.account.user.id, char.name, packet.zone_id, char.id)
+        char_info = DetailedUserInfo(uid, char.name, packet.zone_id, char.id)
         self.server.rnserver.send(char_info, address)
 
         self.server.repman.add_participant(address)
 
-        for scene in luz.scenes:  # NOTE: should we spawn objects from all scenes?
-            for obj in scene.objects:
-                replica = BaseData(random.randint(100000000000000000, 999999999999999999), obj.lot, obj.name, scale=obj.scale,
-                                   components=obj.components)
-                self.server.repman.construct(replica, True)
+        for obj in clone.objects:
+            #objid = random.randint(100000000000000000, 999999999999999999)
+            objid = obj.objid
 
-        player = Player(char, luz.spawnpoint, luz.spawnpoint_rot)
+            trigger = obj.config.get('renderDisabled')
+            components = obj.components
+
+            if trigger:
+                trigger_comp = Trigger()
+
+                components.append(trigger_comp)
+
+            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=obj.components, trigger=trigger)
+            self.server.repman.construct(replica, True)
+
+        player = Player(char, clone.spawn, clone.spawn_rotation)
         self.server.repman.construct(player, True)
 
         obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS)

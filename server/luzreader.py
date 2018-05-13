@@ -30,7 +30,7 @@ class LUObject:
         self.position = pos
         self.rotation = rot
         self.scale = scale
-        self.config = parse_ldf(config)
+        self.config = config
         self.conn = conn
 
     @property
@@ -45,7 +45,7 @@ class LUObject:
         """
         Returns all components for this object
         """
-        order = [108, 61, 1, 3, 20, 30, 40, 7, 23, 26, 4, 19, 17, 5, 9, 60, 48, 25, 49, 16, 6, 39, 71, 75, 42, 2, 50, 107, 69]
+        order = [108, 61, 1, 3, 20, 30, 40, 7, 23, 26, 4, 19, 17, 5, 9, 60, 48, 25, 49, 16, 6, 39, 71, 75, 42, 2, 50, 107, 69, 116]
 
         sorted_order = sorted(order)
         nums = [x for x in range(sorted_order[0], sorted_order[-1] + 1)]
@@ -54,6 +54,7 @@ class LUObject:
         order_dict = {k: v for v, k in enumerate(order)}
 
         comps = self.conn.execute('SELECT * FROM ComponentsRegistry WHERE id = ?', (self.lot,)).fetchall()
+
         comps.sort(key=lambda x: order_dict.get(x[1]))
 
         components = []
@@ -186,11 +187,20 @@ class LUZReader:
             unknown1 = stream.read(c_uint)
             unknown2 = stream.read(c_uint)
             position = Vector3(stream.read(c_float), stream.read(c_float), stream.read(c_float))
-            rotation = Vector4(stream.read(c_float), stream.read(c_float), stream.read(c_float), stream.read(c_float))
+
+            rot_w = stream.read(c_float)
+            rot_z = stream.read(c_float)
+            rot_y = stream.read(c_float)
+            rot_x = stream.read(c_float)
+
+            rotation = Vector4(rot_x, rot_y, rot_z, rot_w)
             scale = stream.read(c_float)
-            config_data = stream.read(str, length_type=c_uint)
+            config_data = parse_ldf(stream.read(str, length_type=c_uint))
 
             assert stream.read(c_uint) == 0
+
+            if lot == 176:
+                lot = config_data['spawntemplate']
 
             if lot == 4638:
                 continue

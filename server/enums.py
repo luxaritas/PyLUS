@@ -28,6 +28,7 @@ ZONE_LUZ = {
     0: 'luz/nd_space_ship.luz',
     1000: 'luz/nd_space_ship.luz',
     1100: 'luz/nd_avant_gardens.luz',
+    1200: 'luz/nd_nimbus_station.luz',
 }
 
 
@@ -83,6 +84,11 @@ class GameMessageID:
     PLAYER_READY = 0x01fd
     OFFER_MISSION = 0x00f8
     READY_FOR_UPDATES = 0x0378
+    REQUEST_USE = 0x016c
+    RESPOND_TO_MISSION = 0x00f9
+    NOTIFY_MISSION = 0x00fe
+    MISSION_DIALOGUE_OK = 0x0208
+    MISSION_DIALOGUE_CANCELLED = 0x0469
 
 
 PACKET_NAMES = {

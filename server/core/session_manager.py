@@ -23,6 +23,7 @@ class SessionManager(Plugin):
         return [
             Action('session:new_session', self.new_session, 10),
             Action('session:get_session', self.get_session, 10),
+            Action('session:set_clone', self.set_clone, 10),
             Action('pkt:session_info', self.verify_session, 10),
             Action('rn:user_packet', self.allow_packet, 10),
         ]
@@ -73,6 +74,14 @@ class SessionManager(Plugin):
         Destroys a session
         """
         Session.objects.filter(ip=address[0], port=address[1]).delete()
+
+    def set_clone(self, address, clone):
+        """
+        Sets the world clone for a session
+        """
+        session = Session.objects.get(ip=address[0], port=address[1])
+        session.clone = clone
+        session.save()
 
     def verify_session(self, packet, address):
         """
