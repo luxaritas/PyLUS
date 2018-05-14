@@ -28,7 +28,9 @@ class WorldManager(Plugin):
             Action('world:get_clone', self.get_clone, 10),
             Action('world:get_clone_id', self.get_clone_id, 10),
             Action('world:missions_for_lot', self.missions_for_lot, 10),
+            Action('world:missions_for_lot_target', self.missions_for_lot_target, 10),
             Action('world:get_mission', self.get_mission, 10),
+            Action('world:get_mission_tasks', self.get_mission_tasks, 10),
         ]
 
     def packets(self):
@@ -80,11 +82,23 @@ class WorldManager(Plugin):
         """
         return self.conn.execute('SELECT * FROM Missions WHERE offer_objectID = ?', (lot,)).fetchall()
 
+    def missions_for_lot_target(self, lot):
+        """
+        Returns missions with LOT as target
+        """
+        return self.conn.execute('SELECT * FROM Missions WHERE target_objectID = ?', (lot,)).fetchall()
+
     def get_mission(self, mission):
         """
         Returns a mission from the cdclient
         """
         return self.conn.execute('SELECT * FROM Missions WHERE id = ?', (mission,)).fetchone()
+
+    def get_mission_tasks(self, mission):
+        """
+        Returns tasks for a mission from the cdclient
+        """
+        return self.conn.execute('SELECT * FROM MissionTasks WHERE id = ?', (mission,)).fetchall()
 
 
 class WorldClone:

@@ -226,10 +226,18 @@ class DetailedUserInfo(Packet):
         xml.end('pet')
         xml.start('mis', {})
 
+        xml.start('cur', {})
+        for mission in [x for x in self.missions if x.state == 2]:
+            xml.start('m', {'id': str(mission.mission), 'o': ''})
+            xml.start('sv', {'v': '1'})
+            xml.end('sv')
+            xml.end('m')
+        xml.end('cur')
+
         xml.start('done', {})
         for mission in [x for x in self.missions if x.state == 8]:
-            xml.start('m', {'cct': str(mission.times_completed),
-                            'id': str(mission.mission), 'cts': str(mission.last_completion)})
+            xml.start('m', {'cct': str(mission.times_completed), 'id': str(mission.mission),
+                            'cts': str(mission.last_completion)})
             xml.end('m')
         xml.end('done')
 

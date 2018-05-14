@@ -28,6 +28,7 @@ class DjangoCharacterList(Plugin):
             Action('char:get_character', self.get_character, 10),
             Action('char:get_missions', self.get_missions, 10),
             Action('char:complete_mission', self.complete_mission, 10),
+            Action('char:activate_mission', self.activate_mission, 10),
         ]
 
     def create_character(self, uid, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
@@ -91,3 +92,11 @@ class DjangoCharacterList(Plugin):
         char = Character.objects.get(id=char_id)
 
         Mission(mission=mission_id, character=char, state=8, times_completed=1, last_completion=0).save()
+
+    def activate_mission(self, char_id, mission_id):
+        """
+        Activates a mission
+        """
+        char = Character.objects.get(id=char_id)
+
+        Mission(mission=mission_id, character=char, state=2, times_completed=0, last_completion=0).save()

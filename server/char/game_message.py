@@ -4,7 +4,7 @@ Game message handling
 
 from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8
 
-from enums import GameMessageID
+from enums import GameMessageID, MissionLockState
 from structs import ClientGameMessage, ServerGameMessage
 from plugin import Action, Plugin
 
@@ -53,6 +53,8 @@ class GameMessageHandler(Plugin):
         """
         session = self.server.handle_until_return('session:get_session', address)
         clone = self.server.handle_until_return('world:get_clone', session.clone)
+        char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
+        char_missions = self.server.handle_until_return('char:get_missions', char.id)
 
         multiinteract = stream.read(c_bit)
         multiinteract_id = stream.read(c_uint32)
@@ -68,14 +70,33 @@ class GameMessageHandler(Plugin):
 
         obj = [x for x in clone.objects if x.objid == objid][0]
 
-        missions = self.server.handle_until_return('world:missions_for_lot', obj.lot)
+        if char_missions:
+            missions = self.server.handle_until_return('world:missions_for_lot_target', obj.lot)
 
-        if missions:
-            mission = missions[0]
+            for char_mission in [x for x in char_missions if x.state == 2]:
+                missions2 = [x for x in missions if x[0] == char_mission.mission]
 
-            msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
+                if missions2:
+                    mission = missions2[0]
 
-            self.server.rnserver.send(msg, address)
+                    wstr = WriteStream()
+                    wstr.write(c_int(mission[0]))
+                    wstr.write(c_int(4))
+                    wstr.write(c_bit(True))
+
+                    msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION, wstr)
+                    self.server.rnserver.send(msg, address)
+
+                    break
+        else:
+            missions = self.server.handle_until_return('world:missions_for_lot', obj.lot)
+
+            if missions:
+                mission = missions[0]
+
+                msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
+
+                self.server.rnserver.send(msg, address)
 
     def request_linked_mission(self, packet, address, stream):
         """
@@ -105,13 +126,23 @@ class GameMessageHandler(Plugin):
 
         session = self.server.handle_until_return('session:get_session', address)
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
-        self.server.handle('char:complete_mission', char.id, mission_id)
+        self.server.handle('char:activate_mission', char.id, mission_id)
+
+        tasks = self.server.handle_until_return('world:get_mission_tasks', mission_id)
+
+        for task in tasks:
+            wstr = WriteStream()
+            wstr.write(c_int(mission_id))
+            wstr.write(c_int(1 << (task[2] + 1)))
+            wstr.write(c_uint8(0))
+
+            msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
+            self.server.rnserver.send(msg, address)
 
         wstr = WriteStream()
         wstr.write(c_int(mission_id))
-        wstr.write(c_int(1 << 5))
-        wstr.write(c_uint8(0))
+        wstr.write(c_int(2))
+        wstr.write(c_bit(True))
 
-        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
-
+        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION, wstr)
         self.server.rnserver.send(msg, address)
