@@ -11,8 +11,8 @@ class Stats(Component):
     """
     Stats component class
     """
-    def __init__(self, stats=True, health=4, max_health=4, armor=0, max_armor=4, imagination=0,
-                 max_imagination=4, factions=[1], smashable=False):
+    def __init__(self, stats=True, health=4, max_health=4, armor=0, max_armor=4, imagination=6,
+                 max_imagination=6, factions=[1], smashable=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_construction(self, stream):

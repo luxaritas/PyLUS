@@ -40,7 +40,7 @@ class Character(models.Model):
 
 class Mission(models.Model):
     mission = models.SmallIntegerField()
-    character = models.OneToOneField(Character, on_delete=models.CASCADE)
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
     state = models.SmallIntegerField()
     times_completed = models.SmallIntegerField()
     last_completion = models.IntegerField()
