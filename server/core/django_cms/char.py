@@ -91,7 +91,10 @@ class DjangoCharacterList(Plugin):
         """
         char = Character.objects.get(id=char_id)
 
-        Mission(mission=mission_id, character=char, state=8, times_completed=1, last_completion=0).save()
+        mission = Mission.objects.get(mission=mission_id, character=char)
+        mission.state = 8
+        mission.times_completed += 1
+        mission.save()
 
     def activate_mission(self, char_id, mission_id):
         """
