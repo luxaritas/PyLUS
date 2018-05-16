@@ -31,6 +31,7 @@ class WorldManager(Plugin):
             Action('world:missions_for_lot_target', self.missions_for_lot_target, 10),
             Action('world:get_mission', self.get_mission, 10),
             Action('world:get_mission_tasks', self.get_mission_tasks, 10),
+            Action('world:mission_prereq', self.mission_prereq, 10),
         ]
 
     def packets(self):
@@ -99,6 +100,12 @@ class WorldManager(Plugin):
         Returns tasks for a mission from the cdclient
         """
         return self.conn.execute('SELECT * FROM MissionTasks WHERE id = ?', (mission,)).fetchall()
+
+    def mission_prereq(self, mission):
+        """
+        Returns missions that have the mission as prerequirement
+        """
+        return self.conn.execute('SELECT * FROM Missions WHERE prereqMissionID = ?', (mission,)).fetchall()
 
 
 class WorldClone:

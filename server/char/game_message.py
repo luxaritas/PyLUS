@@ -2,7 +2,7 @@
 Game message handling
 """
 
-from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8, c_bool
+from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8, c_float
 
 from enums import GameMessageID, MissionLockState
 from structs import ClientGameMessage, ServerGameMessage
@@ -42,6 +42,8 @@ class GameMessageHandler(Plugin):
             self.mission_accept(packet, address, stream)
         elif packet.message_id == GameMessageID.REQUEST_LINKED_MISSION:
             self.request_linked_mission(packet, address, stream)
+        elif packet.message_id == GameMessageID.HAS_BEEN_COLLECTED:
+            self.collected(packet, address, stream)
         elif packet.message_id == 888:
             pass
         else:
@@ -84,28 +86,7 @@ class GameMessageHandler(Plugin):
 
                         self.server.handle('char:complete_mission', char.id, mission[0])
 
-                        wstr = WriteStream()
-                        wstr.write(c_int(mission[0]))
-                        wstr.write(c_int(8))
-                        wstr.write(c_bit(False))
-
-                        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION, wstr)
-                        self.server.rnserver.send(msg, address)
-
-                        return
-
-                for char_mission in [x for x in char_missions if x.state == 4]:
-                    missions2 = [x for x in missions if x[0] == char_mission.mission]
-
-                    if missions2:
-                        mission = missions2[0]
-
-                        wstr = WriteStream()
-                        wstr.write(c_int(mission[0]))
-                        wstr.write(c_int(8))
-                        wstr.write(c_bit(False))
-
-                        msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION, wstr)
+                        msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
                         self.server.rnserver.send(msg, address)
 
                         return
@@ -148,24 +129,78 @@ class GameMessageHandler(Plugin):
 
         session = self.server.handle_until_return('session:get_session', address)
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
-        self.server.handle('char:activate_mission', char.id, mission_id)
 
-        # tasks = self.server.handle_until_return('world:get_mission_tasks', mission_id)
+        if complete:
+            self.server.handle('char:complete_mission', char.id, mission_id)
 
-        # for task in tasks:
-        #     wstr = WriteStream()
-        #     wstr.write(c_int(mission_id))
-        #     wstr.write(c_int(1 << (task[2] + 1)))
-        #     wstr.write(c_uint8(0))
+            wstr = WriteStream()
+            wstr.write(c_int(mission_id))
+            wstr.write(c_int(8))
+            wstr.write(c_bit(False))
 
-        #     msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
-        #     self.server.rnserver.send(msg, address)
+            msg = ServerGameMessage(responder_objid, GameMessageID.NOTIFY_MISSION, wstr)
+        else:
 
-        wstr = WriteStream()
-        wstr.write(c_int(mission_id))
-        wstr.write(c_int(2))
-        wstr.write(c_bit(False))
+            self.server.handle('char:activate_mission', char.id, mission_id)
 
-        msg = ServerGameMessage(responder_objid, GameMessageID.NOTIFY_MISSION, wstr)
+            # tasks = self.server.handle_until_return('world:get_mission_tasks', mission_id)
+
+            # for task in tasks:
+            #     wstr = WriteStream()
+            #     wstr.write(c_int(mission_id))
+            #     wstr.write(c_int(1 << (task[2] + 1)))
+            #     wstr.write(c_uint8(0))
+
+            #     msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
+            #     self.server.rnserver.send(msg, address)
+
+            wstr = WriteStream()
+            wstr.write(c_int(mission_id))
+            wstr.write(c_int(2))
+            wstr.write(c_bit(False))
+
+            msg = ServerGameMessage(responder_objid, GameMessageID.NOTIFY_MISSION, wstr)
 
         self.server.rnserver.send(msg, address)
+
+    def collected(self, packet, address, stream):
+        """
+        Handles the has been collected game message
+        """
+
+        objid = stream.read(c_int64)
+
+        print(f'Collected object')
+        print(f'ID: {packet.objid}')
+        print(f'Player: {objid}')
+
+        session = self.server.handle_until_return('session:get_session', address)
+        char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
+        clone = self.server.handle_until_return('world:get_clone', session.clone)
+        char_missions = self.server.handle_until_return('char:get_missions', char.id)
+
+        objs = [x for x in clone.objects if x.objid == packet.objid]
+
+        if objs:
+            obj = objs[0]
+
+            for char_mission in [x for x in char_missions if x.state == 2]:
+                tasks = self.server.handle_until_return('world:get_mission_tasks', char_mission.mission)
+
+                for task in tasks:
+                    if task[3] == obj.lot and task[2] == 3:
+                        char_mission.progress += 1
+                        char_mission.save()
+
+                        wstr = WriteStream()
+
+                        wstr.write(c_int(char_mission.mission))
+                        wstr.write(c_int(1 << (tasks.index(task) + 1)))
+                        wstr.write(c_uint8(1))
+                        wstr.write(c_float(char_mission.progress + (clone.zone << 8)))
+
+                        msg = ServerGameMessage(objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
+
+                        self.server.rnserver.send(msg, address)
+
+                        return
