@@ -1,5 +1,5 @@
 """
-Script component
+Bouncer component
 """
 
 from pyraknet.bitstream import c_bit
@@ -7,15 +7,16 @@ from pyraknet.bitstream import c_bit
 from replica.component import Component
 
 
-class Script(Component):
+class Bouncer(Component):
     """
-    Script component class
+    Bouncer component class
     """
-    def __init__(self, script=False):
+    def __init__(self, requires_pet=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_construction(self, stream):
-        stream.write(c_bit(self.script))
+        self.serialize(stream)
 
     def serialize(self, stream):
-        pass
+        stream.write(c_bit(True))
+        stream.write(c_bit(not self.requires_pet))

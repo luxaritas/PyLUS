@@ -16,6 +16,9 @@ from replica.destructible import Destructible
 from replica.skill import Skill
 from replica.component107 import Component107
 from replica.phantom_physics import PhantomPhysics
+from replica.bouncer import Bouncer
+from replica.rebuild import Rebuild
+from replica.stats import Stats
 
 from structs import Vector3, Vector4, parse_ldf
 
@@ -74,19 +77,30 @@ class LUObject:
                 component = Character()  # TODO: read stuff from config?
             elif comp_type == 5:
                 component = Script()  # TODO: read stuff from config?
+            elif comp_type == 6:
+                component = Bouncer()
             elif comp_type == 7:
                 component = Destructible()
             elif comp_type == 9:
                 component = Skill()  # TODO: read stuff from config?
             elif comp_type == 40:
                 component = PhantomPhysics(self.position, self.rotation)  # TODO: read stuff from config?
+            elif comp_type == 48:
+                component = [
+                    Script(script=False),
+                    Stats(stats=False),
+                    Rebuild(activator_pos=Vector3.from_ldf(self.config['rebuild_activators'])),
+                ]
             elif comp_type == 107:
                 component = Component107()
             else:
                 print(f'Unhandled component type in {self.name}: {comp_type}')
 
             if component:
-                components.append(component)
+                if isinstance(component, list):
+                    components.extend(component)
+                else:
+                    components.append(component)
 
         return components
 

@@ -16,10 +16,10 @@ class Vector4:
     Vector4
     """
     def __init__(self, x, y, z, w=0):
-        self.x = x
-        self.y = y
-        self.z = z
-        self.w = w
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+        self.w = float(w)
 
     @classmethod
     def from_array(cls, arr):
@@ -41,15 +41,23 @@ class Vector3:
     Vector3
     """
     def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
 
     @classmethod
     def from_array(cls, arr):
         """
         Creates a Vector3 from an array
         """
+        return cls(arr[0], arr[1], arr[2])
+
+    @classmethod
+    def from_ldf(cls, ldf_val):
+        """
+        Creates a Vector3 from a ldf value
+        """
+        arr = ldf_val.split('\x1f')
         return cls(arr[0], arr[1], arr[2])
 
 

@@ -13,6 +13,7 @@ from char.list import CharacterListResponse, Character as Minifigure
 from replica.player import Player
 from replica.base_data import BaseData
 from replica.trigger import Trigger
+from replica.rebuild import Rebuild  # TODO: remove
 from plugin import Plugin, Action
 from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
 from structs import ServerGameMessage, Packet, LegoData, Vector3
@@ -91,7 +92,21 @@ class JoinWorld(Plugin):
 
                 components.append(trigger_comp)
 
+            for component in components:
+                if isinstance(component, Rebuild):
+                    print(components)
+
             replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger)
+
+            wstr = WriteStream()
+            wstr.write(c_uint8(0x24))
+            wstr.write(c_bit(True))
+            wstr.write(c_uint16(0))
+            replica.write_construction(wstr)
+
+            with open(f'logs/[24] {obj.name} - {obj.objid}.bin', 'wb') as f:
+                f.write(bytes(wstr))
+
             self.server.repman.construct(replica, True)
 
         player = Player(char, clone.spawn, clone.spawn_rotation)
@@ -228,8 +243,8 @@ class DetailedUserInfo(Packet):
 
         xml.start('cur', {})
         for mission in [x for x in self.missions if x.state == 2]:
-            xml.start('m', {'id': str(mission.mission), 'o': ''})
-            xml.start('sv', {'v': '1'})
+            xml.start('m', {'id': str(mission.mission), 'o': '1'})
+            xml.start('sv', {'v': str(mission.progress)})
             xml.end('sv')
             xml.end('m')
         xml.end('cur')
