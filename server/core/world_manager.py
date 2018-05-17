@@ -14,7 +14,7 @@ class WorldManager(Plugin):
     """
     World manager class
     """
-    conn = sqlite3.connect('cdclient.sqlite')
+    conn = sqlite3.connect('server/cdclient.sqlite')
     cache = {}
     clones = []
 

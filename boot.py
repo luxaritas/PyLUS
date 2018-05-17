@@ -1,3 +1,9 @@
+#!/usr/bin/python3.6
+
+'''
+Integrated server and CMS startup
+'''
+
 import multiprocessing
 import asyncio
 import yaml
@@ -8,49 +14,52 @@ from gunicorn.six import iteritems
 from cms.cms.wsgi import application as cms_app
 from server import start_server
 
+#pylint: disable=abstract-method
 class GunicornCMS(gunicorn.app.base.BaseApplication):
-
+    '''
+    Gunicorn application for PyLUS CMS
+    '''
     def __init__(self, config):
-        if config['cms']['workers'] == 'default':
+        self.config = config
+        self.application = cms_app
+        super().__init__()
+
+    def load_config(self):
+        if self.config['cms']['workers'] == 'default':
             workers = (multiprocessing.cpu_count() * 2) + 1
         else:
-            workers = config['cms']['workers']
+            workers = self.config['cms']['workers']
 
-        host = config["cms"]["listen_host"]
-        port = config["cms"]["listen_port"]
+        host = self.config["cms"]["listen_host"]
+        port = self.config["cms"]["listen_port"]
 
         options = {
             'bind': f'{host}:{port}',
             'workers': workers
         }
-        
-        self.options = options
-        self.application = cms_app
-        super().__init__()
 
-    def load_config(self):
-        config = dict([(key, value) for key, value in iteritems(self.options)
-                       if key in self.cfg.settings and value is not None])
-        for key, value in iteritems(config):
-            self.cfg.set(key.lower(), value)
+        for key, value in iteritems(options):
+            self.cfg.set(key, value)
 
     def load(self):
         return self.application
-    
+
 if __name__ == '__main__':
     try:
         with open('config.yml') as f:
-            config = yaml.load(f)
+            user_config = yaml.load(f)
     except FileNotFoundError:
         with open('config.default.yml') as f:
-            config = yaml.load(f)
-    
-    cms_process = multiprocessing.Process(target=GunicornCMS(config).run)
-    cms_process.start()
-    servers = start_server.start(config)
-    
+            user_config = yaml.load(f)
+
+    if user_config['cms']['enabled']:
+        cms_process = multiprocessing.Process(target=GunicornCMS(user_config).run)
+        cms_process.start()
+    servers = start_server.start(user_config)
+
     loop = asyncio.get_event_loop()
     loop.run_forever()
-    
+
     loop.close()
-    cms_process.join()
+    if user_config['cms']['enabled']:
+        cms_process.join()
