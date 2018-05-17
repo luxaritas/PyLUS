@@ -7,20 +7,20 @@ import os.path
 
 from pyraknet.bitstream import ReadStream, c_uint, c_float, c_ubyte, c_uint64, c_ushort, c_int64
 
-from replica.simple_physics import SimplePhysics
-from replica.render import Render
-from replica.script import Script
-from replica.controllable_physics import ControllablePhysics
-from replica.character import Character
-from replica.destructible import Destructible
-from replica.skill import Skill
-from replica.component107 import Component107
-from replica.phantom_physics import PhantomPhysics
-from replica.bouncer import Bouncer
-from replica.rebuild import Rebuild
-from replica.stats import Stats
+from .replica.simple_physics import SimplePhysics
+from .replica.render import Render
+from .replica.script import Script
+from .replica.controllable_physics import ControllablePhysics
+from .replica.character import Character
+from .replica.destructible import Destructible
+from .replica.skill import Skill
+from .replica.component107 import Component107
+from .replica.phantom_physics import PhantomPhysics
+from .replica.bouncer import Bouncer
+from .replica.rebuild import Rebuild
+from .replica.stats import Stats
 
-from structs import Vector3, Vector4, parse_ldf
+from .structs import Vector3, Vector4, parse_ldf
 
 
 class LUObject:

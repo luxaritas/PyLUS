@@ -5,8 +5,8 @@ Controllable physics
 from pyraknet.bitstream import c_bit, c_uint32, c_float, c_int64
 from pyraknet.replicamanager import Replica
 
-from replica.component import Component
-from structs import Vector3, Vector4
+from .component import Component
+from server.structs import Vector3, Vector4
 
 
 class ControllablePhysics(Component):

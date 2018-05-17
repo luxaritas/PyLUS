@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
                                c_double, c_uint, c_bool
 
-from enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES, LDF_VALUE_TYPES
+from .enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES, LDF_VALUE_TYPES
 
 
 class Vector4:

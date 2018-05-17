@@ -4,9 +4,9 @@ Game message handling
 
 from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8, c_float
 
-from enums import GameMessageID, MissionLockState
-from structs import ClientGameMessage, ServerGameMessage
-from plugin import Action, Plugin
+from server.enums import GameMessageID, MissionLockState
+from server.structs import ClientGameMessage, ServerGameMessage
+from server.plugin import Action, Plugin
 
 
 class GameMessageHandler(Plugin):

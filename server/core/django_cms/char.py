@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from cms.game.models import Character, Account, Mission
 
-from plugin import Plugin, Action
+from server.plugin import Plugin, Action
 
 
 class DjangoCharacterList(Plugin):

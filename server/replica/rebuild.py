@@ -4,8 +4,8 @@ Rebuild component
 
 from pyraknet.bitstream import c_bit, c_uint32, c_float
 
-from replica.component import Component
-from structs import Vector3
+from .component import Component
+from server.structs import Vector3
 
 
 class Rebuild(Component):

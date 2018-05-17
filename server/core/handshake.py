@@ -3,7 +3,7 @@ Handshake
 """
 
 from pyraknet.bitstream import c_uint16, c_uint32
-from plugin import Plugin, Action, Packet
+from server.plugin import Plugin, Action, Packet
 
 
 class Handshake(Plugin):

@@ -2,18 +2,18 @@
 Player object
 """
 
-from replica.base_data import BaseData
-from replica.controllable_physics import ControllablePhysics
-from replica.destructible import Destructible
-from replica.stats import Stats
-from replica.character import Character
-from replica.inventory import Inventory
-from replica.script import Script
-from replica.skill import Skill
-from replica.render import Render
-from replica.component107 import Component107
+from .base_data import BaseData
+from .controllable_physics import ControllablePhysics
+from .destructible import Destructible
+from .stats import Stats
+from .character import Character
+from .inventory import Inventory
+from .script import Script
+from .skill import Skill
+from .render import Render
+from .component107 import Component107
 
-from structs import Vector3, Vector4
+from server.structs import Vector3, Vector4
 
 
 class Player(BaseData):

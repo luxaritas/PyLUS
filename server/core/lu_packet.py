@@ -5,8 +5,8 @@ Packet router
 import logging
 
 from pyraknet.bitstream import ReadStream
-from plugin import Plugin, Action, Packet
-from structs import LUHeader
+from server.plugin import Plugin, Action, Packet
+from server.structs import LUHeader
 
 
 log = logging.getLogger(__name__)
