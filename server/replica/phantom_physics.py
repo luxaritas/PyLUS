@@ -4,8 +4,8 @@ PhantomPhysics component
 
 from pyraknet.bitstream import c_bit, c_float, c_uint32
 
-from replica.component import Component
-from structs import Vector3, Vector4
+from .component import Component
+from server.structs import Vector3, Vector4
 
 
 class PhantomPhysics(Component):

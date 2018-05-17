@@ -4,9 +4,9 @@ Create character
 
 from pyraknet.bitstream import Serializable, c_uint32, c_uint8
 
-from char.list import CharacterListResponse, Character as Minifigure
-from plugin import Plugin, Action
-from structs import Packet
+from server.char.list import CharacterListResponse, Character as Minifigure
+from server.plugin import Plugin, Action
+from server.structs import Packet
 
 
 class CreateCharacter(Plugin):

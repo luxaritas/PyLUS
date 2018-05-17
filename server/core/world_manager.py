@@ -5,9 +5,9 @@ World manager
 import random
 import sqlite3
 
-from enums import ZONE_LUZ
-from plugin import Plugin, Action
-from luzreader import LUZReader
+from server.enums import ZONE_LUZ
+from server.plugin import Plugin, Action
+from server.luzreader import LUZReader
 
 
 class WorldManager(Plugin):

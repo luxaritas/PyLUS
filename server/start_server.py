@@ -7,35 +7,20 @@ Main file
 import asyncio
 import inspect
 import logging
-import yaml
 import os
 import sys
-
-sys.path.append(os.path.abspath('..'))
+import yaml
 
 from pyraknet.server import Server as RNServer, Event as RNEvent
 from pyraknet.replicamanager import ReplicaManager
 from django.conf import settings
 from django.apps import apps
 
-from plugin import get_plugins
+from .plugin import get_plugins
 from cms.cms import settings as cms_settings
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
-# --- Make the CMS available within Pylus ---
-settings.configure(
-    DATABASES=cms_settings.DATABASES,
-    TIME_ZONE=cms_settings.TIME_ZONE,
-    INSTALLED_APPS=[
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'cms.game',
-    ],
-)
-apps.populate(settings.INSTALLED_APPS)
-
 
 class Server:
     """
@@ -52,9 +37,8 @@ class Server:
         self.handlers = {}
         self.packets = {}
 
-        self.register_plugins('core')
-        self.register_plugins('core.django_cms')
-        self.register_plugins(self.type if self.type in ['auth', 'char', 'chat'] else 'world')
+        self.register_plugins('server.core')
+        self.register_plugins('server.' + self.type if self.type in ['auth', 'char', 'chat'] else 'server.world')
 
         if self.type not in ['auth', 'chat']:
             self.rnserver.file_logged_packets.update(['ReplicaManagerConstruction'])
@@ -132,19 +116,34 @@ class Server:
 
         return None
 
+def start(config):
+    servers = {}
+    for srv_type, conf in config['servers'].items():
+        if conf['enabled']:
+            servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'],
+                                     config)
+    return servers
 
 if __name__ == '__main__':
+    sys.path.append(os.path.abspath('..'))
+    # --- Make the CMS available within Pylus ---
+    settings.configure(
+        DATABASES=cms_settings.DATABASES,
+        TIME_ZONE=cms_settings.TIME_ZONE,
+        INSTALLED_APPS=[
+            'django.contrib.auth',
+            'django.contrib.contenttypes',
+            'cms.game',
+        ],
+    )
+    apps.populate(settings.INSTALLED_APPS)
     try:
-        with open('config.yml') as f:
-            s_config = yaml.load(f)
+        with open('../config.yml') as f:
+            config = yaml.load(f)
     except FileNotFoundError:
-        with open('config.default.yml') as f:
-            s_config = yaml.load(f)
-    servers = {}
-    for s_type, conf in s_config['servers'].items():
-        if conf['enabled']:
-            servers[s_type] = Server(s_type, conf['listen_host'], conf['listen_port'], conf['max_connections'],
-                                     s_config)
+        with open('../config.default.yml') as f:
+            config = yaml.load(f)
+    servers = start(config)
 
     loop = asyncio.get_event_loop()
     loop.run_forever()

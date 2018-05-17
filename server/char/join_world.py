@@ -9,15 +9,15 @@ from xml.etree import ElementTree
 
 from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
 
-from char.list import CharacterListResponse, Character as Minifigure
-from replica.player import Player
-from replica.base_data import BaseData
-from replica.trigger import Trigger
-from replica.rebuild import Rebuild  # TODO: remove
-from plugin import Plugin, Action
-from enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
-from structs import ServerGameMessage, Packet, LegoData, Vector3
-from luzreader import LUZReader
+from server.char.list import CharacterListResponse, Character as Minifigure
+from server.replica.player import Player
+from server.replica.base_data import BaseData
+from server.replica.trigger import Trigger
+from server.replica.rebuild import Rebuild  # TODO: remove
+from server.plugin import Plugin, Action
+from server.enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
+from server.structs import ServerGameMessage, Packet, LegoData, Vector3
+from server.luzreader import LUZReader
 
 
 class JoinWorld(Plugin):

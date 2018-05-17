@@ -5,7 +5,7 @@ Auth
 from django.contrib.auth import authenticate
 
 from cms.game.models import Account
-from plugin import Plugin, Action
+from server.plugin import Plugin, Action
 
 class DjangoAuthentication(Plugin):
     """

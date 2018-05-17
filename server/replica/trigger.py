@@ -4,7 +4,7 @@ Trigger component
 
 from pyraknet.bitstream import c_bit, c_int32
 
-from replica.component import Component
+from .component import Component
 
 
 class Trigger(Component):

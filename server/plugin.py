@@ -9,7 +9,7 @@ import pkgutil
 from abc import ABC, abstractmethod
 from typing import List, NamedTuple, Callable, overload
 from pyraknet.bitstream import Serializable, WriteStream
-from structs import LUHeader
+from .structs import LUHeader
 
 class Packet(Serializable):
     """

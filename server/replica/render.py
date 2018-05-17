@@ -5,7 +5,7 @@ Render component
 from pyraknet.bitstream import c_uint32
 from pyraknet.replicamanager import Replica
 
-from replica.component import Component
+from .component import Component
 
 
 class Render(Component):

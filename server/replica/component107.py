@@ -4,7 +4,7 @@ Component 107
 
 from pyraknet.bitstream import c_bit, c_int64
 
-from replica.component import Component
+from .component import Component
 
 
 class Component107(Component):

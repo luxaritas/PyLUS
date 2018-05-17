@@ -4,7 +4,7 @@ Inventory component
 
 from pyraknet.bitstream import c_bit, c_uint32
 
-from replica.component import Component
+from .component import Component
 
 
 class Inventory(Component):

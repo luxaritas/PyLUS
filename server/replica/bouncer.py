@@ -4,7 +4,7 @@ Bouncer component
 
 from pyraknet.bitstream import c_bit
 
-from replica.component import Component
+from .component import Component
 
 
 class Bouncer(Component):

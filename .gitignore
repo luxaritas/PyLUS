@@ -60,7 +60,7 @@ target/
 *.tmp
 
 # Custom config
-server/config.yml
+config.yml
 
 # DB
 cms/db.sqlite3

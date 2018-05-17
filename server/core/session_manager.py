@@ -9,7 +9,7 @@ from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
 
 from cms.game.models import Session, Account
 
-from plugin import Plugin, Action, Packet
+from server.plugin import Plugin, Action, Packet
 
 
 class SessionManager(Plugin):

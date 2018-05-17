@@ -4,7 +4,7 @@ Unknown packet
 
 import logging
 
-from plugin import Plugin, Action
+from server.plugin import Plugin, Action
 
 
 log = logging.getLogger(__name__)
