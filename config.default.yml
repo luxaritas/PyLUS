@@ -5,6 +5,7 @@ global:
     enable_all: &enable_all True
 
 cms:
+    enabled: *enable_all
     debug: False
     listen_host: *global_listen_host
     listen_port: 80

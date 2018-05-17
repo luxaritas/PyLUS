@@ -1,7 +1,5 @@
-#!/usr/bin/python3.6
-
 """
-Main file
+Core server implementation and startup
 """
 
 import asyncio
@@ -120,31 +118,5 @@ def start(config):
     servers = {}
     for srv_type, conf in config['servers'].items():
         if conf['enabled']:
-            servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'],
-                                     config)
+            servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'], config)
     return servers
-
-if __name__ == '__main__':
-    sys.path.append(os.path.abspath('..'))
-    # --- Make the CMS available within Pylus ---
-    settings.configure(
-        DATABASES=cms_settings.DATABASES,
-        TIME_ZONE=cms_settings.TIME_ZONE,
-        INSTALLED_APPS=[
-            'django.contrib.auth',
-            'django.contrib.contenttypes',
-            'cms.game',
-        ],
-    )
-    apps.populate(settings.INSTALLED_APPS)
-    try:
-        with open('../config.yml') as f:
-            config = yaml.load(f)
-    except FileNotFoundError:
-        with open('../config.default.yml') as f:
-            config = yaml.load(f)
-    servers = start(config)
-
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
-    loop.close()
