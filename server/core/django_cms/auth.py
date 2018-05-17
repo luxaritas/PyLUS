@@ -1,22 +1,22 @@
-import secrets, base64
-from datetime import datetime, timedelta
-import bcrypt
+"""
+Auth
+"""
 
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from cms.game.models import Session, Account
 
+from cms.game.models import Account
 from plugin import Plugin, Action
 
 class DjangoAuthentication(Plugin):
+    """
+    Django auth plugin
+    """
     def actions(self):
+        """
+        Returns all actions
+        """
         return [
-            Action('auth:check_credentials', self.check_credentials, 10),
-            Action('auth:token', self.get_new_token, 10),
-            Action('auth:check_token', self.check_token, 10),
-            Action('auth:get_user_id', self.get_user_id, 10)
-            Action('auth:get_address', self.get_address, 10),
-            Action('auth:set_address', self.set_address, 10),
+            Action('auth:login_user', self.login_user, 10),
             #Action('auth:check_banned', self.check_banned, 10),
             #Action('auth:check_permission', self.check_permission, 10),
             #Action('auth:check_locked', self.check_locked, 10),
@@ -25,64 +25,76 @@ class DjangoAuthentication(Plugin):
             Action('auth:new_subscriber', self.get_new_subscriber, 10),
             Action('auth:free_to_play', self.get_lego_club, 10),
             Action('auth:lego_club', self.get_lego_club, 10),
+            Action('auth:create_game_account', self.create_game_account, 10),
+            Action('auth:has_game_account', self.has_game_account, 10),
         ]
 
-    def check_credentials(self, username, password):
+    def create_game_account(self, username, password, lego_club=False):
+        """
+        Creates a game account for a user
+        """
         user = authenticate(username=username, password=password)
-        if user is not None:
+
+        if not user:
+            return None
+
+        account = Account.objects.create(user=user,
+                                         lego_club=lego_club,
+                                         free_to_play=False,
+                                         new_subscriber=True,
+                                         front_character=0)
+
+        return account
+
+    def has_game_account(self, uid):
+        """
+        Returns a game account linked to a user
+        """
+        try:
+            Account.objects.get(user__id=uid)
             return True
-        else:
-            return False
-        
-    def get_new_token(self, uid):
-        account = Account.objects.get(user__pk=uid)
-        token = secrets.token_urlsafe(24)
-        hashed = bcrypt.hashpw(token.encode('utf-8'), bcrypt.gensalt())
-        account.session.token = hashed
-        account.save()
-        return token
-
-    def check_token(self, uid, token):
-        account = Account.objects.get(user__uid=uid)
-        session = account.session
-
-        # Session expired
-        if datetime.utcnow() - session.created > timedelta(days=1):
-            session.delete()
+        except Account.DoesNotExist:
             return False
 
-        if bcrypt.checkpw(token, session.token):
-            return True
+    def login_user(self, username, password):
+        """
+        Checks credentials
+        """
+        user = authenticate(username=username, password=password)
 
-        return False
+        if not user:
+            return None
 
-    def set_address(self, uid, address):
-        account = Account.objects.get(user__pk=uid)
-        account.session.address = address
-        account.save()
+        try:
+            Account.objects.get(user=user)
+        except Account.DoesNotExist:
+            self.create_game_account(username, password)
 
-    def get_address(self, uid):
-        account = Account.objects.get(user__pk=uid)
-        return account.session.address
-
-    def get_user_id(self, address):
-        account = Account.objects.get(session__address=address)
-        return account.user.pk
+        return user.id
 
     def get_lego_club(self, uid):
+        """
+        Returns if the users is in the lego club(?)
+        """
         account = Account.objects.get(user__pk=uid)
         return account.lego_club
 
     def get_free_to_play(self, uid):
+        """
+        Returns if the user is free to play
+        """
         account = Account.objects.get(user__pk=uid)
         return account.free_to_play
 
     def get_new_subscriber(self, uid):
+        """
+        Returns if the user is a new subscriber
+        """
         account = Account.objects.get(user__pk=uid)
-        
-        if account.new_subscriber = True
+
+        if account.new_subscriber:
             account.new_subscriber = False
             account.save()
             return True
-        
+
         return False

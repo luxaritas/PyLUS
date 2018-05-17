@@ -1,21 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Session(models.Model):
-    token = models.CharField(max_length=32)
-    created = models.DateTimeField(auto_now=True)
-    address = models.IntegerField()
-    objid = models.BigIntegerField()
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    session = models.OneToOneField(Session, on_delete=models.CASCADE)
     lego_club = models.BooleanField()
     free_to_play = models.BooleanField()
     new_subscriber = models.BooleanField()
     front_character = models.SmallIntegerField()
 
+class Session(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    token = models.BinaryField()
+    ip = models.GenericIPAddressField()
+    port = models.SmallIntegerField()
+    clone = models.IntegerField(null=True)
+
 class Character(models.Model):
+    id = models.BigIntegerField(primary_key=True)
     slot = models.SmallIntegerField()
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     name = models.CharField(max_length=33)
@@ -35,3 +37,11 @@ class Character(models.Model):
     last_instance = models.IntegerField()
     last_clone = models.IntegerField()
     last_login = models.IntegerField()
+
+class Mission(models.Model):
+    mission = models.SmallIntegerField()
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
+    state = models.SmallIntegerField()
+    times_completed = models.SmallIntegerField()
+    last_completion = models.IntegerField()
+    progress = models.IntegerField()
