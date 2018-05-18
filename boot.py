@@ -1,8 +1,8 @@
 #!/usr/bin/python3.6
 
-'''
+"""
 Integrated server and CMS startup
-'''
+"""
 
 import multiprocessing
 import asyncio
@@ -16,9 +16,9 @@ from server import start_server
 
 #pylint: disable=abstract-method
 class GunicornCMS(gunicorn.app.base.BaseApplication):
-    '''
+    """
     Gunicorn application for PyLUS CMS
-    '''
+    """
     def __init__(self, config):
         self.config = config
         self.application = cms_app
