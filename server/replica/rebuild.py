@@ -12,7 +12,7 @@ class Rebuild(Component):
     """
     Rebuild component class
     """
-    def __init__(self, state=0, success=False, enabled=True, start=0, paused=0, activator_pos=Vector3(0, 0, 0)):
+    def __init__(self, state=2, success=False, enabled=True, start=0, paused=0, activator_pos=Vector3(0, 0, 0)):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def write_construction(self, stream):
