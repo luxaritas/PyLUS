@@ -87,7 +87,6 @@ class LUObject:
                 component = PhantomPhysics(self.position, self.rotation)  # TODO: read stuff from config?
             elif comp_type == 48:
                 component = [
-                    Script(script=False),
                     Stats(stats=False),
                     Rebuild(activator_pos=Vector3.from_ldf(self.config['rebuild_activators'])),
                 ]
@@ -144,7 +143,7 @@ class LUZReader:
             scene_id = self.stream.read(c_uint64)
             scene_name = self.stream.read(bytes, length_type=c_ubyte).decode('latin1')
             assert self.stream.read(bytes, length=3)
-            pth = os.path.join('luz', filename)
+            pth = os.path.join('server', 'luz', filename)
 
             if os.path.exists(pth):
                 with open(pth, 'rb') as file:
