@@ -25,10 +25,9 @@ LDF_VALUE_TYPES = {
 
 
 ZONE_LUZ = {
-    0: 'luz/nd_space_ship.luz',
-    1000: 'luz/nd_space_ship.luz',
-    1100: 'luz/nd_avant_gardens.luz',
-    1200: 'luz/nd_nimbus_station.luz',
+    1000: 'server/luz/nd_space_ship.luz',
+    1100: 'server/luz/nd_avant_gardens.luz',
+    1200: 'server/luz/nd_nimbus_station.luz',
 }
 
 
@@ -44,7 +43,6 @@ LEGO_DATA_TYPES = {
 
 
 ZONE_CHECKSUMS = {
-    0: 0x20b8087c,
     1000: 0x20b8087c,
     1001: 0x26680a3c,
     1100: 0x49525511,
@@ -60,7 +58,6 @@ ZONE_CHECKSUMS = {
 
 
 ZONE_SPAWNPOINTS = {
-    0: [-627.1862, 613.326233, -47.2231674],
     1000: [-627.1862, 613.326233, -47.2231674],
     1001: [-187.2391, 608.2743, 54.5554352],
     1100: [522.9949, 406.040375, 129.992722],
