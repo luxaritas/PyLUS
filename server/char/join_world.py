@@ -92,11 +92,7 @@ class JoinWorld(Plugin):
 
                 components.append(trigger_comp)
 
-            for component in components:
-                if isinstance(component, Rebuild):
-                    print(components)
-
-            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger)
+            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger, spawner=obj.bouncer_objid)
 
             wstr = WriteStream()
             wstr.write(c_uint8(0x24))

@@ -52,10 +52,10 @@ class WorldManager(Plugin):
         """
         Have a user join a world
         """
-        if len([x for x in self.clones if x.zone == zone]) == 0:
+        if not [x for x in self.clones if x.zone == zone]:
             luz = self.get_zone_luz(zone)
 
-            clone = WorldClone(zone, luz)
+            clone = WorldClone(zone, luz, conn=self.conn)
             self.clones.append(clone)
             clone.join(uid, objid, zone)
 
@@ -109,17 +109,23 @@ class WorldManager(Plugin):
 
 
 class WorldClone:
-    def __init__(self, zone, luz, instance=0, max_players=32):
+    def __init__(self, zone, luz, instance=0, max_players=32, conn=None):
         self.zone = zone
         self.instance = instance
         self.max_players = max_players
         self.spawn = luz.spawnpoint
         self.spawn_rotation = luz.spawnpoint_rot
+        self.conn = conn
         self.players = []
         self.objects = []
 
         for scene in luz.scenes:
             for obj in scene.objects:
+                bouncers = self.conn.execute('SELECT id FROM Objects WHERE name LIKE \'%Bouncer%\'').fetchall()
+
+                if (obj.lot,) in bouncers:
+                    print(obj.config)
+                    obj.bouncer_objid = obj.lot
                 obj.objid = random.randint(100000000000000000, 999999999999999999)
                 self.objects.append(obj)
 

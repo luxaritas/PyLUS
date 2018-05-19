@@ -27,7 +27,7 @@ class LUObject:
     """
     LEGO Universe world object
     """
-    def __init__(self, objid, lot, pos, rot, scale, config, conn=None):
+    def __init__(self, objid, lot, pos, rot, scale, config, conn=None, bouncer_objid=None):
         self.objid = objid
         self.lot = lot
         self.position = pos
@@ -35,6 +35,7 @@ class LUObject:
         self.scale = scale
         self.config = config
         self.conn = conn
+        self.bouncer_objid = bouncer_objid
 
     @property
     def name(self):
@@ -217,9 +218,6 @@ class LUZReader:
 
             if lot == 176:
                 lot = config_data['spawntemplate']
-
-            # if lot == 4638:
-            #     continue
 
             obj = LUObject(objid, lot, position, rotation, scale, config_data, self.conn)
             objects.append(obj)
