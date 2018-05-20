@@ -34,9 +34,13 @@ class BaseData(Replica):
         if self.spawner:
             stream.write(c_int64(self.spawner))
 
-        stream.write(c_bit(self.spawner_node != None))
-        if self.spawner_node:
-            stream.write(c_uint32(self.spawner_node))
+        stream.write(c_bit(self.spawner != None))
+        if self.spawner:
+            stream.write(c_uint32(0))
+
+        # stream.write(c_bit(self.spawner_node != None))
+        # if self.spawner_node:
+        #     stream.write(c_uint32(self.spawner_node))
 
         stream.write(c_bit(self.scale != None))
         if self.scale:

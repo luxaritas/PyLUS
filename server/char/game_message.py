@@ -100,6 +100,8 @@ class GameMessageHandler(Plugin):
                 msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
 
                 self.server.rnserver.send(msg, address)
+            else:
+                print(obj.lot)
 
     def request_linked_mission(self, packet, address, stream):
         """

@@ -102,4 +102,4 @@ class DjangoCharacterList(Plugin):
         """
         char = Character.objects.get(id=char_id)
 
-        Mission(mission=mission_id, character=char, state=2, times_completed=0, last_completion=0).save()
+        Mission(mission=mission_id, character=char, state=2, times_completed=0, last_completion=0, progress=0).save()

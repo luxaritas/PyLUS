@@ -44,4 +44,4 @@ class Mission(models.Model):
     state = models.SmallIntegerField()
     times_completed = models.SmallIntegerField()
     last_completion = models.IntegerField()
-    progress = models.IntegerField()
+    progress = models.IntegerField(default=0)

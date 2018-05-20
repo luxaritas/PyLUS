@@ -124,8 +124,8 @@ class WorldClone:
                 bouncers = self.conn.execute('SELECT id FROM Objects WHERE name LIKE \'%Bouncer%\'').fetchall()
 
                 if (obj.lot,) in bouncers:
-                    print(obj.config)
-                    obj.bouncer_objid = obj.lot
+                    obj.bouncer_objid = 70368747895228  # obj.objid
+
                 obj.objid = random.randint(100000000000000000, 999999999999999999)
                 self.objects.append(obj)
 
