@@ -119,7 +119,7 @@ class LUZReader:
     LEGO Universe Zone file reader
     """
     def __init__(self, file, conn=None):
-        self.conn = conn or sqlite3.connect('server/cdclient.sqlite')
+        self.conn = conn or sqlite3.connect('client_assets/cdclient.sqlite')
         self.scenes = []
 
         with open(file, 'rb') as file:
@@ -143,7 +143,7 @@ class LUZReader:
             scene_id = self.stream.read(c_uint64)
             scene_name = self.stream.read(bytes, length_type=c_ubyte).decode('latin1')
             assert self.stream.read(bytes, length=3)
-            pth = os.path.join('server', 'luz', filename)
+            pth = os.path.join('client_assets', 'luz', filename)
 
             if os.path.exists(pth):
                 with open(pth, 'rb') as file:

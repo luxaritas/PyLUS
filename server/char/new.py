@@ -40,9 +40,9 @@ class CreateCharacter(Plugin):
 
         # NOTE: shouldn't we check if len(characters) >= 4?
 
-        first = open('./names/minifigname_first.txt', 'r').readlines()
-        middle = open('./names/minifigname_middle.txt', 'r').readlines()
-        last = open('./names/minifigname_last.txt', 'r').readlines()
+        first = open('./client_assets/names/minifigname_first.txt', 'r').readlines()
+        middle = open('./client_assets/names/minifigname_middle.txt', 'r').readlines()
+        last = open('./client_assets/names/minifigname_last.txt', 'r').readlines()
 
         part1 = first[packet.predef_name1].strip()
         part2 = middle[packet.predef_name2].strip()
