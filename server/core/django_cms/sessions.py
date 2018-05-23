@@ -4,11 +4,11 @@ Session manager
 
 import secrets
 import bcrypt
+from datetime import datetime, timedelta
 
 from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
 
 from cms.game.models import Session, Account
-
 from server.plugin import Plugin, Action, Packet
 
 
@@ -63,7 +63,9 @@ class SessionManager(Plugin):
         except Session.DoesNotExist:
             session = None
 
-        if not session or not bcrypt.checkpw(packet.session_key, session.token):
+        if not session or
+           not bcrypt.checkpw(packet.session_key, session.token) or
+               datetime.utcnow() - session.created > timedelta(days=1):
             self.destroy_session(address)
 
     def allow_packet(self, data, address):
