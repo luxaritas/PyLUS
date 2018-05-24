@@ -25,9 +25,9 @@ LDF_VALUE_TYPES = {
 
 
 ZONE_LUZ = {
-    1000: 'server/luz/nd_space_ship.luz',
-    1100: 'server/luz/nd_avant_gardens.luz',
-    1200: 'server/luz/nd_nimbus_station.luz',
+    1000: 'client_assets/luz/nd_space_ship.luz',
+    1100: 'client_assets/luz/nd_avant_gardens.luz',
+    1200: 'client_assets/luz/nd_nimbus_station.luz',
 }
 
 
