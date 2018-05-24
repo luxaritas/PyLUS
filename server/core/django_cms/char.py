@@ -60,11 +60,11 @@ class DjangoCharacterList(Plugin):
                                  last_clone=last_clone,
                                  last_login=last_login)
 
-    def get_characters(self, uid):
+    def get_characters(self, account):
         """
         Returns all characters for a user
         """
-        return Character.objects.filter(account__user__pk=uid)
+        return Character.objects.filter(account=account)
 
     def get_character(self, char_id):
         """
@@ -72,11 +72,10 @@ class DjangoCharacterList(Plugin):
         """
         return Character.objects.get(id=char_id)
 
-    def get_front_character(self, uid):
+    def get_front_character(self, account):
         """
         Get the front character for a user
         """
-        account = Account.objects.get(user__pk=uid)
         return account.front_character
 
     def get_missions(self, char_id):
