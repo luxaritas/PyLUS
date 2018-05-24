@@ -33,10 +33,11 @@ class CreateCharacter(Plugin):
         """
         Handles the request
         """
-        uid = self.server.handle_until_return('session:get_session', address).account.user.id
-        status = 0x00
+        account = self.server.handle_until_return('session:get_session', address).account
+        # TODO: Do validation which could result in other status codes
+        status = 'success'
 
-        characters = self.server.handle_until_return('char:characters', uid)
+        characters = self.server.handle_until_return('char:characters', account)
 
         # NOTE: shouldn't we check if len(characters) >= 4?
 
@@ -48,7 +49,7 @@ class CreateCharacter(Plugin):
         part2 = middle[packet.predef_name2].strip()
         part3 = last[packet.predef_name3].strip()
 
-        self.server.handle('char:create_character', uid,
+        new_char = self.server.handle_until_return('char:create_character', account,
                            len(characters) + 1,  # slot
                            part1 + part2 + part3,  # character name
                            packet.name,  # unapproved name
@@ -68,45 +69,38 @@ class CreateCharacter(Plugin):
                            0,  # last clone
                            0)  # last login
 
-        ftp = self.server.handle_until_value('auth:get_free_to_play', True, uid)
+        ftp = self.server.handle_until_value('auth:get_free_to_play', True, account)
 
         serializable_chars = []
 
-        characters = self.server.handle_until_return('char:characters', uid)
+        characters.append(new_char)
 
         for character in characters:
-            serializable_char = Minifigure(character_id=character.id,
-                                           unknown1=0,
-                                           character_name=character.name,
-                                           character_unapproved_name=character.unapproved_name,
-                                           is_name_rejected=character.is_name_rejected,
-                                           free_to_play=character.account.free_to_play,
-                                           unknown2=0,
-                                           shirt_color=character.shirt_color,
-                                           shirt_style=character.shirt_style,
-                                           pants_color=character.pants_color,
-                                           hair_style=character.hair_style,
-                                           hair_color=character.hair_color,
-                                           lh=character.lh,
-                                           rh=character.rh,
-                                           eyebrows=character.eyebrows,
-                                           eyes=character.eyes,
-                                           mouth=character.mouth,
-                                           unknown3=0,
-                                           last_zone=character.last_zone,
-                                           last_instance=character.last_instance,
-                                           last_clone=character.last_clone,
-                                           last_login=character.last_login,
-                                           items=[])
+            serializable_char = Minifigure(character.id,
+                                           character.name,
+                                           character.unapproved_name,
+                                           character.is_name_rejected,
+                                           character.account.free_to_play,
+                                           character.shirt_color,
+                                           character.shirt_style,
+                                           character.pants_color,
+                                           character.hair_style,
+                                           character.hair_color,
+                                           character.lh,
+                                           character.rh,
+                                           character.eyebrows,
+                                           character.eyes,
+                                           character.mouth,
+                                           character.last_zone,
+                                           character.last_instance,
+                                           character.last_clone,
+                                           character.last_login,
+                                           [])
 
             serializable_chars.append(serializable_char)
 
-        res = MinifigureCreateResponse(status)
-        res2 = CharacterListResponse(serializable_chars, len(serializable_chars) - 1)
-
-        self.server.rnserver.send(res, address)
-        self.server.rnserver.send(res2, address)
-
+        self.server.rnserver.send(MinifigureCreateResponse(status), address)
+        self.server.rnserver.send(CharacterListResponse(serializable_chars, len(serializable_chars) - 1), address)
 
 class MinifigureCreateRequest(Packet):
     """
@@ -154,10 +148,22 @@ class MinifigureCreateResponse(Packet):
     def __init__(self, status):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
+    @property
+    def status_code(self):
+        """
+        Returns a dict of auth status codes
+        """
+        return {
+            'success': 0x00,
+            'name_not_allowed': 0x02,
+            'predef_in_use': 0x03,
+            'custom_in_use': 0x04,
+        }.get(self.status)
+    
     def serialize(self, stream):
         """
         Serializes the packet
         """
         super().serialize(stream)
 
-        stream.write(c_uint8(self.status))
+        stream.write(c_uint8(self.status_code))

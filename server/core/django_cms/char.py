@@ -31,15 +31,14 @@ class DjangoCharacterList(Plugin):
             Action('char:activate_mission', self.activate_mission, 10),
         ]
 
-    def create_character(self, uid, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
+    def create_character(self, account, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
                          hair_style, hair_color, lh, rh, eyebrows, eyes, mouth, last_zone, last_instance, last_clone,
                          last_login):
         """
         Creates a character
         """
-        account = Account.objects.get(user__pk=uid)
-
-        Character.objects.create(id=random.randint(1000000000000000000, 9999999999999999999),
+        # TODO: Actually set the OBJID correctly
+        return Character.objects.create(id=random.randint(1000000000000000000, 9999999999999999999),
                                  slot=slot,
                                  account=account,
                                  name=name,
