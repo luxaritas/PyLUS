@@ -25,36 +25,7 @@ class DjangoAuthentication(Plugin):
             Action('auth:new_subscriber', self.get_new_subscriber, 10),
             Action('auth:free_to_play', self.get_lego_club, 10),
             Action('auth:lego_club', self.get_lego_club, 10),
-            Action('auth:create_game_account', self.create_game_account, 10),
-            Action('auth:has_game_account', self.has_game_account, 10),
         ]
-
-    def create_game_account(self, username, password, lego_club=False):
-        """
-        Creates a game account for a user
-        """
-        user = authenticate(username=username, password=password)
-
-        if not user:
-            return None
-
-        account = Account.objects.create(user=user,
-                                         lego_club=lego_club,
-                                         free_to_play=False,
-                                         new_subscriber=True,
-                                         front_character=0)
-
-        return account
-
-    def has_game_account(self, uid):
-        """
-        Returns a game account linked to a user
-        """
-        try:
-            Account.objects.get(user__id=uid)
-            return True
-        except Account.DoesNotExist:
-            return False
 
     def login_user(self, username, password):
         """
@@ -68,30 +39,30 @@ class DjangoAuthentication(Plugin):
         try:
             Account.objects.get(user=user)
         except Account.DoesNotExist:
-            self.create_game_account(username, password)
+            account = Account.objects.create(user=user,
+                                         lego_club=lego_club,
+                                         free_to_play=False,
+                                         new_subscriber=True,
+                                         front_character=0)
 
-        return user.id
+        return account
 
-    def get_lego_club(self, uid):
+    def get_lego_club(self, account):
         """
         Returns if the users is in the lego club(?)
         """
-        account = Account.objects.get(user__pk=uid)
         return account.lego_club
 
-    def get_free_to_play(self, uid):
+    def get_free_to_play(self, account):
         """
         Returns if the user is free to play
         """
-        account = Account.objects.get(user__pk=uid)
         return account.free_to_play
 
-    def get_new_subscriber(self, uid):
+    def get_new_subscriber(self, account):
         """
         Returns if the user is a new subscriber
         """
-        account = Account.objects.get(user__pk=uid)
-
         if account.new_subscriber:
             account.new_subscriber = False
             account.save()

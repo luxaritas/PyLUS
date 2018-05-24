@@ -11,8 +11,6 @@ import yaml
 
 from pyraknet.server import Server as RNServer, Event as RNEvent
 from pyraknet.replicamanager import ReplicaManager
-from django.conf import settings
-from django.apps import apps
 
 from .plugin import get_plugins
 from cms.cms import settings as cms_settings
