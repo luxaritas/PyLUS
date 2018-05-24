@@ -10,9 +10,6 @@ class Handshake(Plugin):
     """
     Handshake plugin
     """
-    def __init__(self, server):
-        super().__init__(server)
-
     def actions(self):
         """
         Returns all actions
