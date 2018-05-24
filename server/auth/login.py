@@ -36,9 +36,10 @@ class Login(Plugin):
         token = ''
         account = self.server.handle_until_return('auth:login_user', packet.username, packet.password)
 
-        if not user:
+        if not account:
             auth_status = 'bad_credentials'
-            account = None
+            new_subscriber = False
+            ftp = False
         else:
             if self.server.handle_until_value('auth:check_banned', True, account, address):
                 auth_status = 'banned'
@@ -58,16 +59,11 @@ class Login(Plugin):
 
             if auth_status == 'success':
                 token = self.server.handle_until_return('session:new_session', account, address)
+                new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, account)
+                ftp = self.server.handle_until_value('auth:free_to_play', True, account)
 
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
-
-        if uid:
-            new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, account)
-            ftp = self.server.handle_until_value('auth:free_to_play', True, account)
-        else:
-            new_subscriber = False
-            ftp = False
-
+        
         char_ip = self.server.config['servers']['char']['public_host']
         chat_ip = self.server.config['servers']['chat']['public_host']
         char_port = self.server.config['servers']['char']['public_port']
