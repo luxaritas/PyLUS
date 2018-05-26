@@ -15,6 +15,7 @@ class Session(models.Model):
     ip = models.GenericIPAddressField()
     port = models.SmallIntegerField()
     clone = models.IntegerField(null=True)
+    created = models.DateTimeField()
 
 class Character(models.Model):
     id = models.BigIntegerField(primary_key=True)
