@@ -16,11 +16,11 @@ class SessionManager(Plugin):
     """
     Session manager plugin
     """
-    
+
     def __init__(self, *args):
         super().__init__(*args)
-        self.session_cache = []
-    
+        self.session_cache = {}
+
     def actions(self):
         """
         Returns all actions
@@ -52,7 +52,7 @@ class SessionManager(Plugin):
         session.save()
 
         return token
-    
+
     def verify_session(self, packet, address):
         """
         Verifies a session
@@ -63,8 +63,8 @@ class SessionManager(Plugin):
         except Session.DoesNotExist:
             session = None
 
-        if not session or
-           not bcrypt.checkpw(packet.session_key, session.token) or
+        if not session or \
+           not bcrypt.checkpw(packet.session_key, session.token) or \
                datetime.utcnow() - session.created > timedelta(days=1):
             self.destroy_session(address)
 
@@ -76,7 +76,7 @@ class SessionManager(Plugin):
 
         if not getattr(packet, 'allow_without_session') and not self.get_session(address):
             self.destroy_session(address)
-    
+
     def get_session(self, address):
         """
         Returns a user session
