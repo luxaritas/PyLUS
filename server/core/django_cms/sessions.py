@@ -4,9 +4,11 @@ Session manager
 
 import secrets
 import bcrypt
+
 from datetime import datetime, timedelta
 
 from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
+from django.utils.timezone import now
 
 from cms.game.models import Session, Account
 from server.plugin import Plugin, Action, Packet
@@ -46,9 +48,9 @@ class SessionManager(Plugin):
         Creates a new session
         """
         token = secrets.token_urlsafe(24)
-        hashed = bcrypt.hashpw(token, bcrypt.gensalt())
+        hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
 
-        session = Session(account=account, ip=address[0], port=address[1], token=hashed)
+        session = Session(account=account, ip=address[0], port=address[1], token=hashed, created=now())
         session.save()
 
         return token
@@ -64,8 +66,8 @@ class SessionManager(Plugin):
             session = None
 
         if not session or \
-           not bcrypt.checkpw(packet.session_key, session.token) or \
-               datetime.utcnow() - session.created > timedelta(days=1):
+           not bcrypt.checkpw(packet.session_key.encode('latin1'), session.token) or \
+               now() - session.created > timedelta(days=1):
             self.destroy_session(address)
 
     def allow_packet(self, data, address):

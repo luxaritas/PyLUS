@@ -37,13 +37,13 @@ class DjangoAuthentication(Plugin):
             return None
 
         try:
-            Account.objects.get(user=user)
+            account = Account.objects.get(user=user)
         except Account.DoesNotExist:
             account = Account.objects.create(user=user,
-                                         lego_club=lego_club,
-                                         free_to_play=False,
-                                         new_subscriber=True,
-                                         front_character=0)
+                                             lego_club=False,
+                                             free_to_play=False,
+                                             new_subscriber=True,
+                                             front_character=0)
 
         return account
 
