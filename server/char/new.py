@@ -63,11 +63,10 @@ class CreateCharacter(Plugin):
                            packet.mouth,  # mouth
                            1000,  # last zone
                            0,  # last instance
-                           0,  # last clone
-                           0)  # last login
+                           0)  # last clone
 
         self.server.rnserver.send(MinifigureCreateResponse(status), address)
-        self.server.handle_until_value('char:send_char_list', True, session)
+        self.server.handle_until_value('char:send_list', True, session)
 
 class MinifigureCreateRequest(Packet):
     """

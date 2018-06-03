@@ -35,7 +35,7 @@ class CharacterList(Plugin):
         Handles a char list request
         """
         session = self.server.handle_until_return('session:get_session', address)
-        self.server.handle_until_value('char:send_char_list', True, session)
+        self.server.handle_until_value('char:send_list', True, session)
         
         
     def send_char_list(self, session):
@@ -43,8 +43,12 @@ class CharacterList(Plugin):
         front_char = self.server.handle_until_return('char:front_char', characters)
 
         serializable_characters = []
+        front_char_id  = 0
+        
+        for idx, character in enumerate(characters):
+            if character.objid == front_char.objid:
+                front_char_id = idx
 
-        for character in characters:
             serializable_character = Character(character.objid,
                                                character.name,
                                                character.unapproved_name,
@@ -67,8 +71,8 @@ class CharacterList(Plugin):
                                                [])
 
             serializable_characters.append(serializable_character)
-
-        res = CharacterListResponse(serializable_characters, serializable_characters.index(front_char))
+        
+        res = CharacterListResponse(serializable_characters, front_char_id)
         self.server.rnserver.send(res, (session.ip, session.port))
         
         return True
@@ -114,10 +118,10 @@ class Character(Serializable):
     """
     Character serializable
     """
-    def __init__(self, character_id, character_name, character_unapproved_name, is_name_rejected, free_to_play,
+    def __init__(self, objid, character_name, character_unapproved_name, is_name_rejected, free_to_play,
                  shirt_color, shirt_style, pants_color, hair_style, hair_color, lh, rh, eyebrows, eyes, mouth,
                  last_zone, last_instance, last_clone, last_login, equipped_items, unknown1=0, unknown2=b'\x00'*10, unknown3=0):
-        self.character_id = character_id
+        self.objid = objid
         self.unknown1 = unknown1
         self.character_name = character_name
         self.character_unapproved_name = character_unapproved_name
@@ -146,7 +150,7 @@ class Character(Serializable):
         """
         Serializes the packet
         """
-        stream.write(c_int64(self.character_id))
+        stream.write(c_int64(self.objid))
         stream.write(c_uint32(self.unknown1))
         stream.write(self.character_name, allocated_length=33)
         stream.write(self.character_unapproved_name, allocated_length=33)
@@ -169,5 +173,9 @@ class Character(Serializable):
         stream.write(c_uint32(self.last_clone))
         stream.write(c_uint64(self.last_login))
         stream.write(c_uint16(len(self.equipped_items)))
-        for item in self.items:
+        for item in self.equipped_items:
             stream.write(c_uint32(item))
+         
+    @classmethod
+    def deserialize(cls, stream):
+        raise NotImplementedError
