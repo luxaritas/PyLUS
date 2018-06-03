@@ -7,8 +7,11 @@ global:
 cms:
     enabled: *enable_all
     debug: False
+    secret_key: generate
     listen_host: *global_listen_host
     listen_port: 80
+    public_host: *global_public_host
+    public_port: 80
     workers: default
 
 servers:
