@@ -4,9 +4,11 @@ Session manager
 
 import secrets
 import bcrypt
+
 from datetime import datetime, timedelta
 
 from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
+from django.utils.timezone import now
 
 from cms.game.models import Session, Account
 from server.plugin import Plugin, Action, Packet
@@ -16,11 +18,11 @@ class SessionManager(Plugin):
     """
     Session manager plugin
     """
-    
+
     def __init__(self, *args):
         super().__init__(*args)
-        self.session_cache = []
-    
+        self.session_cache = {}
+
     def actions(self):
         """
         Returns all actions
@@ -46,13 +48,13 @@ class SessionManager(Plugin):
         Creates a new session
         """
         token = secrets.token_urlsafe(24)
-        hashed = bcrypt.hashpw(token, bcrypt.gensalt())
+        hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
 
-        session = Session(account=account, ip=address[0], port=address[1], token=hashed)
+        session = Session(account=account, ip=address[0], port=address[1], token=hashed, created=now())
         session.save()
 
         return token
-    
+
     def verify_session(self, packet, address):
         """
         Verifies a session
@@ -63,9 +65,9 @@ class SessionManager(Plugin):
         except Session.DoesNotExist:
             session = None
 
-        if not session or
-           not bcrypt.checkpw(packet.session_key, session.token) or
-               datetime.utcnow() - session.created > timedelta(days=1):
+        if not session or \
+           not bcrypt.checkpw(packet.session_key.encode('latin1'), session.token) or \
+               now() - session.created > timedelta(days=1):
             self.destroy_session(address)
 
     def allow_packet(self, data, address):
@@ -76,7 +78,7 @@ class SessionManager(Plugin):
 
         if not getattr(packet, 'allow_without_session') and not self.get_session(address):
             self.destroy_session(address)
-    
+
     def get_session(self, address):
         """
         Returns a user session
