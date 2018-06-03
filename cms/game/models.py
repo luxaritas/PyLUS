@@ -7,7 +7,6 @@ class Account(models.Model):
     lego_club = models.BooleanField()
     free_to_play = models.BooleanField()
     new_subscriber = models.BooleanField()
-    front_character = models.SmallIntegerField()
 
 class Session(models.Model):
     account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
@@ -18,9 +17,16 @@ class Session(models.Model):
     created = models.DateTimeField()
 
 class Character(models.Model):
-    id = models.BigIntegerField(primary_key=True)
-    slot = models.SmallIntegerField()
+    def save(self, *args, **kwargs):
+        if self.is_front:
+            old_front = self.account.character_set.get(is_front=True)
+            old_front.is_front = False
+            old_front.save()
+        super().save(*args, **kwargs)
+    
+    objid = models.BigIntegerField(primary_key=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    is_front = models.BooleanField(default=True)
     name = models.CharField(max_length=33)
     unapproved_name = models.CharField(max_length=33)
     is_name_rejected = models.BooleanField()

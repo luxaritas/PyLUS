@@ -42,8 +42,7 @@ class DjangoAuthentication(Plugin):
             account = Account.objects.create(user=user,
                                              lego_club=False,
                                              free_to_play=False,
-                                             new_subscriber=True,
-                                             front_character=0)
+                                             new_subscriber=True)
 
         return account
 

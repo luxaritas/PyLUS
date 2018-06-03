@@ -33,11 +33,9 @@ class CreateCharacter(Plugin):
         """
         Handles the request
         """
-        account = self.server.handle_until_return('session:get_session', address).account
+        session = self.server.handle_until_return('session:get_session', address)
         # TODO: Do validation which could result in other status codes
         status = 'success'
-
-        characters = self.server.handle_until_return('char:characters', account)
 
         # NOTE: shouldn't we check if len(characters) >= 4?
 
@@ -49,8 +47,7 @@ class CreateCharacter(Plugin):
         part2 = middle[packet.predef_name2].strip()
         part3 = last[packet.predef_name3].strip()
 
-        new_char = self.server.handle_until_return('char:create_character', account,
-                           len(characters) + 1,  # slot
+        new_char = self.server.handle_until_return('char:create_character', session.account,
                            part1 + part2 + part3,  # character name
                            packet.name,  # unapproved name
                            False,  # is name rejected
@@ -69,38 +66,8 @@ class CreateCharacter(Plugin):
                            0,  # last clone
                            0)  # last login
 
-        ftp = self.server.handle_until_value('auth:get_free_to_play', True, account)
-
-        serializable_chars = []
-
-        characters.append(new_char)
-
-        for character in characters:
-            serializable_char = Minifigure(character.id,
-                                           character.name,
-                                           character.unapproved_name,
-                                           character.is_name_rejected,
-                                           character.account.free_to_play,
-                                           character.shirt_color,
-                                           character.shirt_style,
-                                           character.pants_color,
-                                           character.hair_style,
-                                           character.hair_color,
-                                           character.lh,
-                                           character.rh,
-                                           character.eyebrows,
-                                           character.eyes,
-                                           character.mouth,
-                                           character.last_zone,
-                                           character.last_instance,
-                                           character.last_clone,
-                                           character.last_login,
-                                           [])
-
-            serializable_chars.append(serializable_char)
-
         self.server.rnserver.send(MinifigureCreateResponse(status), address)
-        self.server.rnserver.send(CharacterListResponse(serializable_chars, len(serializable_chars) - 1), address)
+        self.server.handle_until_value('char:send_char_list', True, session)
 
 class MinifigureCreateRequest(Packet):
     """
