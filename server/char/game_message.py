@@ -55,7 +55,7 @@ class GameMessageHandler(Plugin):
         """
         session = self.server.handle_until_return('session:get_session', address)
         clone = self.server.handle_until_return('world:get_clone', session.clone)
-        char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
+        char = self.server.handle_until_return('char:front_char', session.account.character_set.all())
         char_missions = self.server.handle_until_return('char:get_missions', char.id)
 
         multiinteract = stream.read(c_bit)

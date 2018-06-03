@@ -17,7 +17,8 @@ class CharacterList(Plugin):
         Returns all actions
         """
         return [
-            Action('pkt:character_list_request', self.character_list_request, 10)
+            Action('pkt:character_list_request', self.character_list_request, 10),
+            Action('char:send_list', self.send_char_list, 10),
         ]
 
     def packets(self):
@@ -33,15 +34,18 @@ class CharacterList(Plugin):
         """
         Handles a char list request
         """
-        account = self.server.handle_until_return('session:get_session', address).account
-
-        front_char_id = self.server.handle_until_return('char:front_char_index', account)
-        characters = self.server.handle_until_return('char:characters', account)
+        session = self.server.handle_until_return('session:get_session', address)
+        self.server.handle_until_value('char:send_char_list', True, session)
+        
+        
+    def send_char_list(self, session):
+        characters = self.server.handle_until_return('char:characters', session.account)
+        front_char = self.server.handle_until_return('char:front_char', characters)
 
         serializable_characters = []
 
         for character in characters:
-            serializable_character = Character(character.id,
+            serializable_character = Character(character.objid,
                                                character.name,
                                                character.unapproved_name,
                                                character.is_name_rejected,
@@ -64,9 +68,10 @@ class CharacterList(Plugin):
 
             serializable_characters.append(serializable_character)
 
-        res = CharacterListResponse(serializable_characters, 0 if front_char_id > len(characters) -1 else front_char_id)
-
-        self.server.rnserver.send(res, address)
+        res = CharacterListResponse(serializable_characters, serializable_characters.index(front_char))
+        self.server.rnserver.send(res, (session.ip, session.port))
+        
+        return True
 
 
 class CharacterListRequest(Packet):

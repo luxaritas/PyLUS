@@ -23,7 +23,7 @@ class DjangoCharacterList(Plugin):
         """
         return [
             Action('char:characters', self.get_characters, 10),
-            Action('char:front_char_index', self.get_front_character, 10),
+            Action('char:front_char', self.get_front_character, 10),
             Action('char:create_character', self.create_character, 10),
             Action('char:get_character', self.get_character, 10),
             Action('char:get_missions', self.get_missions, 10),
@@ -39,7 +39,6 @@ class DjangoCharacterList(Plugin):
         """
         # TODO: Actually set the OBJID correctly
         return Character.objects.create(id=random.randint(1000000000000000000, 9999999999999999999),
-                                 slot=slot,
                                  account=account,
                                  name=name,
                                  unapproved_name=unapproved_name,
@@ -63,33 +62,31 @@ class DjangoCharacterList(Plugin):
         """
         Returns all characters for a user
         """
-        return Character.objects.filter(account=account)
+        return account.character_set.all()
 
     def get_character(self, char_id):
         """
         Returns the character with that id
         """
-        return Character.objects.get(id=char_id)
+        return Character.objects.get(objid=char_id)
 
-    def get_front_character(self, account):
+    def get_front_character(self, characters):
         """
         Get the front character for a user
         """
-        return account.front_character
+        return list(filter(lambda char: char.is_front, characters))[0]
 
     def get_missions(self, char_id):
         """
         Returns missions for a character
         """
-        return Mission.objects.filter(character__id=char_id)
+        return Mission.objects.filter(character__objid=char_id)
 
     def complete_mission(self, char_id, mission_id):
         """
         Completes a mission
         """
-        char = Character.objects.get(id=char_id)
-
-        mission = Mission.objects.get(mission=mission_id, character=char)
+        mission = Mission.objects.get(mission=mission_id, character__objid=char_id)
         mission.state = 8
         mission.times_completed += 1
         mission.save()
@@ -98,6 +95,4 @@ class DjangoCharacterList(Plugin):
         """
         Activates a mission
         """
-        char = Character.objects.get(id=char_id)
-
-        Mission(mission=mission_id, character=char, state=2, times_completed=0, last_completion=0).save()
+        Mission(mission=mission_id, character__objid=char_id, state=2, times_completed=0, last_completion=0).save()
