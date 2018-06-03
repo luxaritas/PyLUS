@@ -31,14 +31,13 @@ class DjangoCharacterList(Plugin):
             Action('char:activate_mission', self.activate_mission, 10),
         ]
 
-    def create_character(self, account, slot, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
-                         hair_style, hair_color, lh, rh, eyebrows, eyes, mouth, last_zone, last_instance, last_clone,
-                         last_login):
+    def create_character(self, account, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
+                         hair_style, hair_color, lh, rh, eyebrows, eyes, mouth, last_zone, last_instance, last_clone):
         """
         Creates a character
         """
         # TODO: Actually set the OBJID correctly
-        return Character.objects.create(id=random.randint(1000000000000000000, 9999999999999999999),
+        return Character.objects.create(objid=random.randint(1000000000000000000, 9999999999999999999),
                                  account=account,
                                  name=name,
                                  unapproved_name=unapproved_name,
@@ -56,7 +55,7 @@ class DjangoCharacterList(Plugin):
                                  last_zone=last_zone,
                                  last_instance=last_instance,
                                  last_clone=last_clone,
-                                 last_login=last_login)
+                                 last_login=0)
 
     def get_characters(self, account):
         """
@@ -74,7 +73,10 @@ class DjangoCharacterList(Plugin):
         """
         Get the front character for a user
         """
-        return list(filter(lambda char: char.is_front, characters))[0]
+        filtered = list(filter(lambda char: char.is_front, characters))
+        if len(filtered) == 0:
+            return None
+        return filtered[0]
 
     def get_missions(self, char_id):
         """

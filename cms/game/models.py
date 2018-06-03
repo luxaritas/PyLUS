@@ -19,9 +19,13 @@ class Session(models.Model):
 class Character(models.Model):
     def save(self, *args, **kwargs):
         if self.is_front:
-            old_front = self.account.character_set.get(is_front=True)
-            old_front.is_front = False
-            old_front.save()
+            try:
+                old_front = self.account.character_set.get(is_front=True)
+                old_front.is_front = False
+                old_front.save()
+            except Character.DoesNotExist:
+                # No front char active
+                pass
         super().save(*args, **kwargs)
     
     objid = models.BigIntegerField(primary_key=True)

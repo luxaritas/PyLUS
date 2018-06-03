@@ -115,4 +115,4 @@ class SessionInfo(Packet):
         """
         return cls(username=stream.read(str, allocated_length=33),
                    session_key=stream.read(str, allocated_length=33),
-                   unknown=stream.read(bytes, allocated_length=33))
+                   unknown=stream.read(bytes, length=33))
