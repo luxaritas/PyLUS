@@ -34,9 +34,14 @@ class Server:
         self.packets = {}
 
         self.register_plugins('server.core')
-        self.register_plugins('server.' + self.type if self.type in ['auth', 'char', 'chat'] else 'server.world')
+        if self.type in ['auth', 'chat']:
+            self.register_plugins('server.' + self.type)
+        else:
+            self.register_plugins('server.world')
+            if self.type != 'char':
+                self.register_plugins('server.world.zone')
 
-        if self.type not in ['auth', 'chat']:
+        if self.type not in ['auth', 'chat', 'char']:
             self.rnserver.file_logged_packets.update(['ReplicaManagerConstruction'])
             self.repman = ReplicaManager(self.rnserver)
 

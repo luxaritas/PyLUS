@@ -9,7 +9,6 @@ from xml.etree import ElementTree
 
 from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
 
-from server.char.list import CharacterListResponse, Character as Minifigure
 from server.replica.player import Player
 from server.replica.base_data import BaseData
 from server.replica.trigger import Trigger
@@ -73,7 +72,7 @@ class JoinWorld(Plugin):
         clone = self.server.handle_until_return('world:get_clone', session.clone)
         uid = session.account.user.id
 
-        char = self.server.handle_until_return('char:characters', uid)[session.account.front_character]
+        char = self.server.handle_until_return('char:front_char', session.account.character_set.all())
         missions = self.server.handle_until_return('char:get_missions', char.id)
 
         char_info = DetailedUserInfo(uid, char.name, packet.zone_id, char.id, missions=list(missions))
