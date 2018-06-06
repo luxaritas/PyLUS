@@ -52,7 +52,7 @@ class WorldManager(Plugin):
         """
         Have a user join a world
         """
-        if len([x for x in self.clones if x.zone == zone]) == 0:
+        if len([clone for clone in self.clones if clone.zone == zone]) == 0:
             luz = self.get_zone_luz(zone)
 
             clone = WorldClone(zone, luz)

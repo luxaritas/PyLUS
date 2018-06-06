@@ -13,9 +13,9 @@ from cms.game.models import Character, Account, Mission
 from server.plugin import Plugin, Action
 
 
-class DjangoCharacterList(Plugin):
+class DjangoCharacterPersistence(Plugin):
     """
-    Character list plugin
+    Character persistence plugin
     """
     def actions(self):
         """
