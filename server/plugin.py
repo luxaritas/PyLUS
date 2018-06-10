@@ -90,13 +90,13 @@ class Plugin(ABC):
         """
         return []
 
-def isplugin(member):
+def isderivative(member, cls):
     """
     Checks if member is a plugin
     """
-    return inspect.isclass(member) and issubclass(member, Plugin) and member is not Plugin
+    return inspect.isclass(member) and issubclass(member, cls) and member is not cls
 
-def get_plugins(package):
+def get_derivatives(package, base_class):
     """
     Get plugins from a package
 
@@ -110,9 +110,9 @@ def get_plugins(package):
         module = importlib.import_module(full_name)
 
         if is_pkg:
-            result += get_plugins(full_name)
+            result += get_derivatives(full_name, base_class)
         else:
-            for _, plugin in inspect.getmembers(module, isplugin):
+            for _, plugin in inspect.getmembers(module, lambda module: isderivative(module, base_class)):
                 result.append(plugin)
 
     return result

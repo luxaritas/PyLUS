@@ -1,170 +1,83 @@
 """
-Join world
+Handles world entry
 """
 
 import zlib
-import random
-
 from xml.etree import ElementTree
 
-from pyraknet.bitstream import WriteStream, c_int, c_int32, c_int64, c_uint, c_uint8, c_uint16, c_uint32, c_float, c_bool, c_bit
+from pyraknet.bitstream import WriteStream, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bool
+
+from server.plugin import Plugin, Action
+from server.structs import Packet, LegoData
+from server.enums import ZONE_IDS, ZONE_CHECKSUMS
 
 from server.replica.player import Player
-from server.replica.base_data import BaseData
-from server.replica.trigger import Trigger
-from server.replica.rebuild import Rebuild  # TODO: remove
-from server.plugin import Plugin, Action
-from server.enums import ZONE_CHECKSUMS, ZONE_SPAWNPOINTS, ZONE_LUZ, GameMessageID
-from server.structs import ServerGameMessage, Packet, LegoData, Vector3
-from server.luzreader import LUZReader
 
+from server.structs import ServerGameMessage, Vector3, Vector4
+from server.enums import GameMessageID, ZONE_SPAWNPOINTS
+from cms.game.models import Mission
 
-class JoinWorld(Plugin):
+class WorldJoin(Plugin):
     """
-    Create character plugin
+    World entry plugin
     """
+    
     def actions(self):
         """
         Returns list of actions
         """
         return [
-            Action('pkt:join_world_request', self.join_world_request, 10),
+            Action('session:verify_success', self.load_world, 10),
             Action('pkt:client_load_complete', self.client_load_complete, 10),
         ]
+    
+    def load_world(self, session):
+        zone_id = ZONE_IDS[self.server.type]
+        self.server.handle('world:zone_entered', session, zone_id)
+        
+        res = WorldInfo(zone_id,
+                        0, # Instance
+                        0, # Clone
+                        ZONE_CHECKSUMS[zone_id],
+                        Vector3(*ZONE_SPAWNPOINTS[zone_id]),
+                        0) # Activity
 
-    def packets(self):
-        """
-        Returns list of packets
-        """
-        return [
-            JoinWorldRequest,
-            ClientLoadComplete,
-        ]
-
-    def join_world_request(self, packet, address):
-        """
-        Handles the packet
-        """
-        char_id = packet.character_id
-
-        char = self.server.handle_until_return('char:get_character', char_id)
-
-        clone = self.server.handle_until_return('world:join', char.account.user.id, char_id, char.last_zone)
-        clone_id = self.server.handle_until_return('world:get_clone_id', clone)
-
-        self.server.handle('session:set_clone', address, clone_id)
-
-        res = WorldInfo(1000 if char.last_zone == 0 else char.last_zone,
-                        0,
-                        clone_id,
-                        ZONE_CHECKSUMS[char.last_zone],
-                        0,
-                        clone.spawn,
-                        0)
-
-        self.server.rnserver.send(res, address)
-
+        self.server.rnserver.send(res, (session.ip, session.port))
+        
     def client_load_complete(self, packet, address):
-        """
-        Handles the clientside load complete packet
-        """
         session = self.server.handle_until_return('session:get_session', address)
-        clone = self.server.handle_until_return('world:get_clone', session.clone)
-        uid = session.account.user.id
-
-        char = self.server.handle_until_return('char:front_char', session.account.character_set.all())
-        missions = self.server.handle_until_return('char:get_missions', char.id)
-
-        char_info = DetailedUserInfo(uid, char.name, packet.zone_id, char.id, missions=list(missions))
+        
+        char_info = DetailedUserInfo(
+            session.account.user.pk,
+            session.character.name,
+            ZONE_IDS[self.server.type],
+            session.character.pk,
+            missions=[Mission(mission=1727, character=session.character, state=8, times_completed=1, last_completion=0)]
+        )
         self.server.rnserver.send(char_info, address)
-
+        
         self.server.repman.add_participant(address)
-
-        for obj in clone.objects:
-            objid = obj.objid
-
-            trigger = obj.config.get('renderDisabled')
-            components = obj.components
-
-            if trigger:
-                trigger_comp = Trigger()
-
-                components.append(trigger_comp)
-
-            for component in components:
-                if isinstance(component, Rebuild):
-                    print(components)
-
-            replica = BaseData(objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger)
-
-            wstr = WriteStream()
-            wstr.write(c_uint8(0x24))
-            wstr.write(c_bit(True))
-            wstr.write(c_uint16(0))
-            replica.write_construction(wstr)
-
-            with open(f'logs/[24] {obj.name} - {obj.objid}.bin', 'wb') as f:
-                f.write(bytes(wstr))
-
-            self.server.repman.construct(replica, True)
-
-        player = Player(char, clone.spawn, clone.spawn_rotation)
+        
+        data = WriteStream()
+        data.write(c_float(1))
+        self.server.rnserver.send(ServerGameMessage(session.character.pk, 0x021d, extra_data=data), address)
+        #player = Player(session.character, Vector3(*ZONE_SPAWNPOINTS[ZONE_IDS[self.server.type]]), Vector4(0,0,0))
+        player = Player(session.character, Vector3(0,25,0), Vector4(0,0,0))
         self.server.repman.construct(player, True)
-
-        obj_load = ServerGameMessage(char.id, GameMessageID.DONE_LOADING_OBJECTS)
+        
+        obj_load = ServerGameMessage(session.character.pk, GameMessageID.DONE_LOADING_OBJECTS)
         self.server.rnserver.send(obj_load, address)
 
-        player_ready = ServerGameMessage(char.id, GameMessageID.PLAYER_READY)
+        player_ready = ServerGameMessage(session.character.pk, GameMessageID.PLAYER_READY)
         self.server.rnserver.send(player_ready, address)
-
-
-class JoinWorldRequest(Packet):
-    """
-    Join world request packet
-    """
-    packet_name = 'join_world_request'
-
-    def __init__(self, character_id):
-        super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
-
-    @classmethod
-    def deserialize(cls, stream):
-        """
-        Deserializes the packet
-        """
-        char_id = stream.read(c_int64)
-
-        return cls(char_id)
-
-
-class ClientLoadComplete(Packet):
-    """
-    Clientside load complete packet
-    """
-    packet_name = 'client_load_complete'
-
-    def __init__(self, zone_id, map_instance, map_clone):
-        super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
-
-    @classmethod
-    def deserialize(cls, stream):
-        """
-        Deserializes the packet
-        """
-        zone_id = stream.read(c_uint16)
-        map_instance = stream.read(c_uint16)
-        map_clone = stream.read(c_uint32)
-
-        return cls(zone_id, map_instance, map_clone)
-
-
+    
 class WorldInfo(Packet):
     """
     World info packet
     """
     packet_name = 'world_info'
 
-    def __init__(self, zone_id, map_instance, map_clone, map_checksum, unknown1, pos, is_activity):
+    def __init__(self, zone_id, map_instance, map_clone, map_checksum, pos, is_activity, unknown1=0):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     def serialize(self, stream):
@@ -197,6 +110,8 @@ class DetailedUserInfo(Packet):
         Serializes the packet
         """
         super().serialize(stream)
+        
+        # TODO: Make this stuff dynamic instead of just empty
 
         ldf = LegoData()
 
@@ -241,7 +156,7 @@ class DetailedUserInfo(Packet):
         xml.start('mis', {})
 
         xml.start('cur', {})
-        for mission in [x for x in self.missions if x.state == 2]:
+        for mission in [mission for mission in self.missions if mission.state == 2]:
             xml.start('m', {'id': str(mission.mission), 'o': '1'})
             xml.start('sv', {'v': str(mission.progress)})
             xml.end('sv')
@@ -249,7 +164,7 @@ class DetailedUserInfo(Packet):
         xml.end('cur')
 
         xml.start('done', {})
-        for mission in [x for x in self.missions if x.state == 8]:
+        for mission in [mission for mission in self.missions if mission.state == 8]:
             xml.start('m', {'cct': str(mission.times_completed), 'id': str(mission.mission),
                             'cts': str(mission.last_completion)})
             xml.end('m')

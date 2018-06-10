@@ -21,13 +21,13 @@ class Player(BaseData):
     Player replica object
     """
     def __init__(self, char, pos=Vector3(0, 0, 0), rot=Vector4(0, 0, 0, 0)):
-        super().__init__(char.id, 1, char.name)
+        super().__init__(char.pk, 1, char.name)
         control = ControllablePhysics(player=True, player_pos=pos, player_rot=rot)
         destructible = Destructible()
         stats = Stats()
         character = Character(shirt_color=char.shirt_color, hair_style=char.hair_style, hair_color=char.hair_color,
                               pants_color=char.pants_color, eyebrows=char.eyebrows, eyes=char.eyes,
-                              account_id=char.account.user.id)
+                              account_id=char.account.user.pk)
 
         inventory = Inventory()
         script = Script()

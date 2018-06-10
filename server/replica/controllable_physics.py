@@ -80,4 +80,4 @@ class ControllablePhysics(Component):
     def serialize(self, stream):
         self.write_data(stream)
 
-        stream.write(c_bit(True))  # NOTE: should this be true?
+        stream.write(c_bit(False))  # NOTE: should this be true?

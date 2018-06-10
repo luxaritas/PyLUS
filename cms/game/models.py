@@ -8,14 +8,6 @@ class Account(models.Model):
     free_to_play = models.BooleanField()
     new_subscriber = models.BooleanField()
 
-class Session(models.Model):
-    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
-    token = models.BinaryField()
-    ip = models.GenericIPAddressField()
-    port = models.SmallIntegerField()
-    clone = models.IntegerField(null=True)
-    created = models.DateTimeField()
-
 class Character(models.Model):
     def save(self, *args, **kwargs):
         if self.is_front:
@@ -48,6 +40,15 @@ class Character(models.Model):
     last_instance = models.IntegerField()
     last_clone = models.IntegerField()
     last_login = models.IntegerField()
+    
+class Session(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, primary_key=True)
+    token = models.BinaryField()
+    ip = models.GenericIPAddressField()
+    port = models.SmallIntegerField()
+    clone = models.IntegerField(null=True)
+    created = models.DateTimeField()
+    character = models.ForeignKey(Character, on_delete=models.SET_NULL, null=True)
 
 class Mission(models.Model):
     mission = models.SmallIntegerField()

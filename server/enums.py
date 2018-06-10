@@ -4,7 +4,6 @@ Enums
 
 from pyraknet.bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
 
-
 LDF_VALUE_TYPES = {
     0: str,
     1: int,
@@ -23,14 +22,6 @@ LDF_VALUE_TYPES = {
     14: str,
 }
 
-
-ZONE_LUZ = {
-    1000: 'client_assets/luz/nd_space_ship.luz',
-    1100: 'client_assets/luz/nd_avant_gardens.luz',
-    1200: 'client_assets/luz/nd_nimbus_station.luz',
-}
-
-
 LEGO_DATA_TYPES = {
     str: 0,
     c_int32: 1,
@@ -41,6 +32,20 @@ LEGO_DATA_TYPES = {
     c_int64: 8,
 }
 
+# TODO: Get zone info from client assets if possible
+
+ZONE_NAMES = {
+    0: 'venture_explorer',
+    1000: 'venture_explorer',
+}
+
+ZONE_IDS = {name: id for id, name in ZONE_NAMES.items()}
+
+ZONE_LUZ = {
+    1000: 'client_assets/luz/nd_space_ship.luz',
+    1100: 'client_assets/luz/nd_avant_gardens.luz',
+    1200: 'client_assets/luz/nd_nimbus_station.luz',
+}
 
 ZONE_CHECKSUMS = {
     1000: 0x20b8087c,
@@ -58,17 +63,17 @@ ZONE_CHECKSUMS = {
 
 
 ZONE_SPAWNPOINTS = {
-    1000: [-627.1862, 613.326233, -47.2231674],
-    1001: [-187.2391, 608.2743, 54.5554352],
-    1100: [522.9949, 406.040375, 129.992722],
-    1101: [35.0297, 365.780426, -201.578369],
-    1102: [-18.7062054, 440.20932, 37.5326424],
-    1150: [-18.7062054, 440.20932, 37.5326424],
-    1151: [25.0526543, 472.215027, -24.318882],
-    1200: [-40.0, 293.047, -16.0],
-    1201: [111.670906, 229.282776, 179.87793],
-    1203: [0.0, 0.0, 0.0],
-    1204: [-12.1019106, 212.900024, 191.147964],
+    1000: (-627.1862, 613.326233, -47.2231674),
+    1001: (-187.2391, 608.2743, 54.5554352),
+    1100: (522.9949, 406.040375, 129.992722),
+    1101: (35.0297, 365.780426, -201.578369),
+    1102: (-18.7062054, 440.20932, 37.5326424),
+    1150: (-18.7062054, 440.20932, 37.5326424),
+    1151: (25.0526543, 472.215027, -24.318882),
+    1200: (-40.0, 293.047, -16.0),
+    1201: (111.670906, 229.282776, 179.87793),
+    1203: (0.0, 0.0, 0.0),
+    1204: (-12.1019106, 212.900024, 191.147964),
 }
 
 
@@ -132,6 +137,7 @@ PACKET_NAMES = {
         0x06: 'character_list_response',
         0x07: 'minifig_create_response',
         0x0c: 'server_game_message',
+        0x0e: 'redirect_to_server'
     }
 }
 

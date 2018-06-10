@@ -12,7 +12,7 @@ import yaml
 from pyraknet.server import Server as RNServer, Event as RNEvent
 from pyraknet.replicamanager import ReplicaManager
 
-from .plugin import get_plugins
+from .plugin import get_derivatives, Plugin
 from cms.cms import settings as cms_settings
 
 log = logging.getLogger(__name__)
@@ -32,6 +32,9 @@ class Server:
         self.plugins = []
         self.handlers = {}
         self.packets = {}
+        
+        if self.type not in ['auth', 'chat', 'char']:
+            self.repman = ReplicaManager(self.rnserver)
 
         self.register_plugins('server.core')
         if self.type in ['auth', 'chat']:
@@ -40,16 +43,14 @@ class Server:
             self.register_plugins('server.world')
             if self.type != 'char':
                 self.register_plugins('server.world.zone')
-
-        if self.type not in ['auth', 'chat', 'char']:
-            self.rnserver.file_logged_packets.update(['ReplicaManagerConstruction'])
-            self.repman = ReplicaManager(self.rnserver)
+        
+        log.info(f'{self.type.upper()} - Started up')
 
     def register_plugins(self, package: str):
         """
         Registers plugins
         """
-        new_plugins = [UserPlugin(self) for UserPlugin in get_plugins(package)]
+        new_plugins = [UserPlugin(self) for UserPlugin in get_derivatives(package, Plugin)]
         self.plugins += new_plugins
 
         for plugin in new_plugins:
@@ -71,7 +72,7 @@ class Server:
             mod = plugin.__module__
             actions = [action.event for action in plugin.actions()]
 
-            log.info(f'{name} - Registered plugin: {mod} consuming {actions}')
+            log.debug(f'{name} - Registered plugin: {mod} consuming {actions}')
 
     def get_ordered_handlers(self, event):
         """

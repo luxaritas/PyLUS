@@ -56,7 +56,7 @@ class GameMessageHandler(Plugin):
         session = self.server.handle_until_return('session:get_session', address)
         clone = self.server.handle_until_return('world:get_clone', session.clone)
         char = self.server.handle_until_return('char:front_char', session.account.character_set.all())
-        char_missions = self.server.handle_until_return('char:get_missions', char.id)
+        char_missions = self.server.handle_until_return('char:get_missions', char.pk)
 
         multiinteract = stream.read(c_bit)
         multiinteract_id = stream.read(c_uint32)
@@ -84,7 +84,7 @@ class GameMessageHandler(Plugin):
                     if missions2:
                         mission = missions2[0]
 
-                        self.server.handle('char:complete_mission', char.id, mission[0])
+                        self.server.handle('char:complete_mission', char.pk, mission[0])
 
                         msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
                         self.server.rnserver.send(msg, address)
@@ -131,7 +131,7 @@ class GameMessageHandler(Plugin):
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
 
         if complete:
-            self.server.handle('char:complete_mission', char.id, mission_id)
+            self.server.handle('char:complete_mission', char.pk, mission_id)
 
             wstr = WriteStream()
             wstr.write(c_int(mission_id))
@@ -141,7 +141,7 @@ class GameMessageHandler(Plugin):
             msg = ServerGameMessage(responder_objid, GameMessageID.NOTIFY_MISSION, wstr)
         else:
 
-            self.server.handle('char:activate_mission', char.id, mission_id)
+            self.server.handle('char:activate_mission', char.pk, mission_id)
 
             # tasks = self.server.handle_until_return('world:get_mission_tasks', mission_id)
 
@@ -177,7 +177,7 @@ class GameMessageHandler(Plugin):
         session = self.server.handle_until_return('session:get_session', address)
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
         clone = self.server.handle_until_return('world:get_clone', session.clone)
-        char_missions = self.server.handle_until_return('char:get_missions', char.id)
+        char_missions = self.server.handle_until_return('char:get_missions', char.pk)
 
         objs = [x for x in clone.objects if x.objid == packet.objid]
 

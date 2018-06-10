@@ -1,17 +1,35 @@
+# To make changes, copy `config.default.yml` to `config.yml`, and the boot script will automatically use it in place of the default
+
+# Defaults across all servers
 global:
+    # Default IP/domain that server instances will accept incoming connections on
     listen_host: &global_listen_host localhost
+    # Default IP/domain that will be sent to clients to connect to
     public_host: &global_public_host localhost
+    # Default number of maximum connections accepted per server
     max_connections: &global_max_connections 10
+    # Whether all servers should be enabled by defaut
     enable_all: &enable_all True
 
+# Django website
 cms:
+    # Whether to start the Django CMS when running the boot script
     enabled: *enable_all
+    # Whether to enable Django's debug mode (DO NOT ENABLE WHEN HOSTING PUBLICALLY)
     debug: False
+    # Cryptographic key used by Django in cryptographic fucntions.
+    # `generate` will create a new secure key whenever the server starts, which is typically optimal
+    # Do NOT change if you do not know how to properly generate a secure key
     secret_key: generate
+    # IP/domain to accept incoming connections on
     listen_host: *global_listen_host
+    # Port to accept incoming connections on
     listen_port: 80
+    # IP/domain that will be sent to clients to connect to
     public_host: *global_public_host
+    # Port that wil be sent to clients to connect to
     public_port: 80
+    # Number of gunicorn workers, `default` uses (number of CPUs * 2) + 1
     workers: default
 
 servers:

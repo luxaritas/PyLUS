@@ -2,7 +2,6 @@
 Session manager
 """
 
-import secrets
 import bcrypt
 
 from datetime import datetime, timedelta
@@ -10,7 +9,7 @@ from datetime import datetime, timedelta
 from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
 from django.utils.timezone import now
 
-from cms.game.models import Session, Account
+from cms.game.models import Session, Account, Character
 from server.plugin import Plugin, Action, Packet
 
 
@@ -28,11 +27,10 @@ class SessionManager(Plugin):
         Returns all actions
         """
         return [
-            Action('session:new_session', self.new_session, 10),
             Action('pkt:session_info', self.verify_session, 10),
             Action('rn:user_packet', self.allow_packet, 10),
             Action('session:get_session', self.get_session, 10),
-            Action('session:set_clone', self.set_clone, 10),
+            Action('session:char_selected', self.set_char, 10)
         ]
 
     def packets(self):
@@ -43,24 +41,12 @@ class SessionManager(Plugin):
             SessionInfo
         ]
 
-    def new_session(self, account, address):
-        """
-        Creates a new session
-        """
-        token = secrets.token_urlsafe(24)
-        hashed = bcrypt.hashpw(token.encode('latin1'), bcrypt.gensalt())
-
-        session = Session(account=account, ip=address[0], port=address[1], token=hashed, created=now())
-        session.save()
-
-        return token
-
     def verify_session(self, packet, address):
         """
         Verifies a session
         """
         try:
-            session = Session.objects.get(ip=address[0], port=address[1])
+            session = Session.objects.get(account__user__username=packet.username)
             self.session_cache[address] = session
         except Session.DoesNotExist:
             session = None
@@ -69,6 +55,12 @@ class SessionManager(Plugin):
            not bcrypt.checkpw(packet.session_key.encode('latin1'), session.token) or \
                now() - session.created > timedelta(days=1):
             self.destroy_session(address)
+        else:
+            # Client address may change when switching servers
+            session.ip = address[0]
+            session.port = address[1]
+            session.save()
+            self.server.handle('session:verify_success', session)
 
     def allow_packet(self, data, address):
         """
@@ -91,13 +83,12 @@ class SessionManager(Plugin):
         """
         Session.objects.filter(ip=address[0], port=address[1]).delete()
         self.server.rnserver.close_connection(address)
-
-    def set_clone(self, address, clone):
+        
+    def set_char(self, session, char_id):
         """
-        Sets the world clone for a session
+        Records the selected char for the given session
         """
-        session = Session.objects.get(ip=address[0], port=address[1])
-        session.clone = clone
+        session.character = session.account.character_set.get(pk=char_id)
         session.save()
 
 

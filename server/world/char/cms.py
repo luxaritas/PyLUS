@@ -29,6 +29,8 @@ class DjangoCharacterPersistence(Plugin):
             Action('char:get_missions', self.get_missions, 10),
             Action('char:complete_mission', self.complete_mission, 10),
             Action('char:activate_mission', self.activate_mission, 10),
+            Action('char:initial_zone', self.get_last_zone, 10),
+            Action('world:zone_entered', self.set_last_zone, 10),
         ]
 
     def create_character(self, account, name, unapproved_name, name_rejected, shirt_color, shirt_style, pants_color,
@@ -67,7 +69,7 @@ class DjangoCharacterPersistence(Plugin):
         """
         Returns the character with that id
         """
-        return Character.objects.get(objid=char_id)
+        return Character.objects.get(pk=char_id)
 
     def get_front_character(self, characters):
         """
@@ -82,13 +84,13 @@ class DjangoCharacterPersistence(Plugin):
         """
         Returns missions for a character
         """
-        return Mission.objects.filter(character__objid=char_id)
+        return Mission.objects.filter(character__pk=char_id)
 
     def complete_mission(self, char_id, mission_id):
         """
         Completes a mission
         """
-        mission = Mission.objects.get(mission=mission_id, character__objid=char_id)
+        mission = Mission.objects.get(mission=mission_id, character__pk=char_id)
         mission.state = 8
         mission.times_completed += 1
         mission.save()
@@ -97,4 +99,14 @@ class DjangoCharacterPersistence(Plugin):
         """
         Activates a mission
         """
-        Mission(mission=mission_id, character__objid=char_id, state=2, times_completed=0, last_completion=0).save()
+        Mission(mission=mission_id, character__pk=char_id, state=2, times_completed=0, last_completion=0).save()
+        
+    def get_last_zone(self, char):
+        """
+        Gets zone to redirect to on client request
+        """
+        return char.last_zone
+    
+    def set_last_zone(self, session, zone_id):
+        session.character.last_zone = zone_id
+        session.character.save()

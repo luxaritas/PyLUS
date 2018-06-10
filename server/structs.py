@@ -10,33 +10,7 @@ from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_u
 
 from .enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES, LDF_VALUE_TYPES
 
-
-class Vector4:
-    """
-    Vector4
-    """
-    def __init__(self, x, y, z, w=0):
-        self.x = float(x)
-        self.y = float(y)
-        self.z = float(z)
-        self.w = float(w)
-
-    @classmethod
-    def from_array(cls, arr):
-        """
-        Creates a Vector4 from an array
-        """
-        return cls(arr[0], arr[1], arr[2], arr[3])
-
-    @classmethod
-    def from_vec3(cls, vec):
-        """
-        Creates a Vector4 from a Vector3
-        """
-        return cls(vec.x, vec.y, vec.z, 0)
-
-
-class Vector3:
+class Vector3(Serializable):
     """
     Vector3
     """
@@ -45,6 +19,14 @@ class Vector3:
         self.y = float(y)
         self.z = float(z)
 
+    @classmethod
+    def deserialize(cls, stream):
+        x = stream.read(c_float)
+        y = stream.read(c_float)
+        z = stream.read(c_float)
+        
+        return cls(x,y,z)
+        
     @classmethod
     def from_array(cls, arr):
         """
@@ -59,7 +41,66 @@ class Vector3:
         """
         arr = ldf_val.split('\x1f')
         return cls(arr[0], arr[1], arr[2])
+    
+    def serialize(self, stream):
+        stream.write(c_float(self.x))
+        stream.write(c_float(self.y))
+        stream.write(c_float(self.z))
 
+class Vector4(Serializable):
+    """
+    Vector4
+    """
+    def __init__(self, x, y, z, w=0):
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+        self.w = float(w)
+
+    @classmethod
+    def deserialize(cls, stream):
+        x = stream.read(c_float)
+        y = stream.read(c_float)
+        z = stream.read(c_float)
+        w = stream.read(c_float)
+        
+        return cls(x, y, z, w)
+        
+    @classmethod
+    def from_array(cls, arr):
+        """
+        Creates a Vector4 from an array
+        """
+        return cls(arr[0], arr[1], arr[2], arr[3])
+
+    @classmethod
+    def from_vec3(cls, vec):
+        """
+        Creates a Vector4 from a Vector3
+        """
+        return cls(vec.x, vec.y, vec.z, 0)
+    
+    def serialize(self, stream):
+        stream.write(c_float(self.x))
+        stream.write(c_float(self.y))
+        stream.write(c_float(self.z))
+        stream.write(c_float(self.w))
+
+class LVLVector4(Vector4):
+    @classmethod
+    def deserialize(cls, stream):
+        w = stream.read(c_float)
+        x = stream.read(c_float)
+        y = stream.read(c_float)
+        z = stream.read(c_float)
+        
+        return cls(x, y, z, w)
+    
+    def serialize(self, stream):
+        stream.write(c_float(self.w))
+        stream.write(c_float(self.x))
+        stream.write(c_float(self.y))
+        stream.write(c_float(self.z))
 
 class CString(Serializable):
     """
