@@ -8,7 +8,7 @@ cms:
     enabled: *enable_all
     debug: False
     listen_host: *global_listen_host
-    listen_port: 80
+    listen_port: 8080
     workers: default
 
 servers:
