@@ -67,3 +67,7 @@ cms/db.sqlite3
 
 # Pyaknet packet logs
 logs/
+
+# IDEs
+.idea/
+.vscode/

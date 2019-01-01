@@ -24,13 +24,11 @@ cms:
     # IP/domain to accept incoming connections on
     listen_host: *global_listen_host
     # Port to accept incoming connections on
-    listen_port: 80
+    listen_port: 8080
     # IP/domain that will be sent to clients to connect to
     public_host: *global_public_host
     # Port that wil be sent to clients to connect to
-    public_port: 80
-    # Number of gunicorn workers, `default` uses (number of CPUs * 2) + 1
-    workers: default
+    public_port: 8080
 
 servers:
     auth:
