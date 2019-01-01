@@ -39,38 +39,40 @@ class ClientObjectLoader(Plugin):
         self.luz = LUZReader(ZONE_LUZ[ZONE_IDS[self.server.type]], self.server.type)
         for scene in self.luz.scenes:
             for obj in scene.objects:
-                trigger = obj.config.get('renderDisabled')
-                components = obj.components
+                if obj.spawner is not None:
+                    trigger = obj.config.get('renderDisabled')
+                    components = obj.components
 
-                if trigger:
-                    trigger_comp = Trigger()
+                    if trigger:
+                        trigger_comp = Trigger()
 
-                    components.append(trigger_comp)
+                        components.append(trigger_comp)
 
-                replica = BaseData(obj.objid, obj.lot, obj.name, scale=obj.scale, components=components, trigger=trigger)
+                    replica = BaseData(obj.objid, obj.lot, obj.name, trigger=trigger, spawner=obj.spawner, scale=obj.scale, components=components)
 
-                wstr = WriteStream()
-                wstr.write(c_uint8(0x24))
-                wstr.write(c_bit(True))
-                wstr.write(c_uint16(0))
-                replica.write_construction(wstr)
+                    wstr = WriteStream()
+                    wstr.write(c_uint8(0x24))
+                    wstr.write(c_bit(True))
+                    wstr.write(c_uint16(0))
+                    replica.write_construction(wstr)
 
-                self.server.repman.construct(replica, True)
-            
+                    self.server.repman.construct(replica, True)
+
     def actions(self):
         return []
-    
+
 class LUObject:
     """
     LEGO Universe world object
     """
-    def __init__(self, objid, lot, pos, rot, scale, config, conn):
+    def __init__(self, objid, lot, pos, rot, scale, config, spawner, conn):
         self.objid = objid
         self.lot = lot
         self.position = pos
         self.rotation = rot
         self.scale = scale
         self.config = config
+        self.spawner = spawner
         self.conn = conn
         self.components = self.get_components()
         print(f'****** {self.name} x {self.position.x} y {self.position.y} z {self.position.z}')
@@ -245,11 +247,11 @@ class LUZReader:
             lot = stream.read(c_uint)
             unknown1 = stream.read(c_uint)
             unknown2 = stream.read(c_uint)
-            
+
             position = stream.read(Vector3)
             rotation = stream.read(LVLVector4)
             scale = stream.read(c_float)
-            
+
             config_data = parse_ldf(stream.read(str, length_type=c_uint))
 
             assert stream.read(c_uint) == 0
@@ -257,11 +259,13 @@ class LUZReader:
             if config_data.get('renderDisabled'):
                 continue
 
+            spawner=None
             if lot == 176:
+                spawner=objid
                 lot = config_data['spawntemplate']
-                objid = random.randint(100000000000000000, 999999999999999999)
+                objid = random.randint(1000000000000000000, 1999999999999999999)
 
-            obj = LUObject(objid, lot, position, rotation, scale, config_data, self.conn)
+            obj = LUObject(objid, lot, position, rotation, scale, config_data, spawner, self.conn)
             objects.append(obj)
 
         return objects

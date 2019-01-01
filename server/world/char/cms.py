@@ -39,7 +39,7 @@ class DjangoCharacterPersistence(Plugin):
         Creates a character
         """
         # TODO: Actually set the OBJID correctly
-        return Character.objects.create(objid=random.randint(1000000000000000000, 9999999999999999999),
+        return Character.objects.create(objid=random.randint(1000000000000000000, 1999999999999999999),
                                  account=account,
                                  name=name,
                                  unapproved_name=unapproved_name,
@@ -100,13 +100,13 @@ class DjangoCharacterPersistence(Plugin):
         Activates a mission
         """
         Mission(mission=mission_id, character__pk=char_id, state=2, times_completed=0, last_completion=0).save()
-        
+
     def get_last_zone(self, char):
         """
         Gets zone to redirect to on client request
         """
         return char.last_zone
-    
+
     def set_last_zone(self, session, zone_id):
         session.character.last_zone = zone_id
         session.character.save()

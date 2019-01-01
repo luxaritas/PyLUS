@@ -21,7 +21,7 @@ class WorldJoin(Plugin):
     """
     World entry plugin
     """
-    
+
     def actions(self):
         """
         Returns list of actions
@@ -30,11 +30,11 @@ class WorldJoin(Plugin):
             Action('session:verify_success', self.load_world, 10),
             Action('pkt:client_load_complete', self.client_load_complete, 10),
         ]
-    
+
     def load_world(self, session):
         zone_id = ZONE_IDS[self.server.type]
         self.server.handle('world:zone_entered', session, zone_id)
-        
+
         res = WorldInfo(zone_id,
                         0, # Instance
                         0, # Clone
@@ -43,10 +43,10 @@ class WorldJoin(Plugin):
                         0) # Activity
 
         self.server.rnserver.send(res, (session.ip, session.port))
-        
+
     def client_load_complete(self, packet, address):
         session = self.server.handle_until_return('session:get_session', address)
-        
+
         char_info = DetailedUserInfo(
             session.account.user.pk,
             session.character.name,
@@ -55,22 +55,18 @@ class WorldJoin(Plugin):
             missions=[Mission(mission=1727, character=session.character, state=8, times_completed=1, last_completion=0)]
         )
         self.server.rnserver.send(char_info, address)
-        
+
         self.server.repman.add_participant(address)
-        
-        data = WriteStream()
-        data.write(c_float(1))
-        self.server.rnserver.send(ServerGameMessage(session.character.pk, 0x021d, extra_data=data), address)
-        #player = Player(session.character, Vector3(*ZONE_SPAWNPOINTS[ZONE_IDS[self.server.type]]), Vector4(0,0,0))
-        player = Player(session.character, Vector3(0,25,0), Vector4(0,0,0))
+
+        player = Player(session.character, Vector3(*ZONE_SPAWNPOINTS[ZONE_IDS[self.server.type]]), Vector4(0,0,0))
         self.server.repman.construct(player, True)
-        
+
         obj_load = ServerGameMessage(session.character.pk, GameMessageID.DONE_LOADING_OBJECTS)
         self.server.rnserver.send(obj_load, address)
 
         player_ready = ServerGameMessage(session.character.pk, GameMessageID.PLAYER_READY)
         self.server.rnserver.send(player_ready, address)
-    
+
 class WorldInfo(Packet):
     """
     World info packet
@@ -110,7 +106,7 @@ class DetailedUserInfo(Packet):
         Serializes the packet
         """
         super().serialize(stream)
-        
+
         # TODO: Make this stuff dynamic instead of just empty
 
         ldf = LegoData()

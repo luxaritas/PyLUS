@@ -71,3 +71,6 @@ logs/
 # IDEs
 .idea/
 .vscode/
+
+# LCDR Utils
+utils/
