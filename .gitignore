@@ -70,6 +70,7 @@ logs/
 
 # IDEs
 .idea/
+*.iml
 .vscode/
 
 # LCDR Utils
