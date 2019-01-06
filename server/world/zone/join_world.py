@@ -11,7 +11,7 @@ from server.plugin import Plugin, Action
 from server.structs import Packet, LegoData
 from server.enums import ZONE_IDS, ZONE_CHECKSUMS
 
-from server.replica.player import Player
+from server.world.replica.player import Player
 
 from server.structs import ServerGameMessage, Vector3, Vector4
 from server.enums import GameMessageID, ZONE_SPAWNPOINTS

@@ -7,18 +7,18 @@ import os.path
 
 from pyraknet.bitstream import ReadStream, c_uint, c_float, c_ubyte, c_uint64, c_ushort, c_int64
 
-from .replica.simple_physics import SimplePhysics
-from .replica.render import Render
-from .replica.script import Script
-from .replica.controllable_physics import ControllablePhysics
-from .replica.character import Character
-from .replica.destructible import Destructible
-from .replica.skill import Skill
-from .replica.component107 import Component107
-from .replica.phantom_physics import PhantomPhysics
-from .replica.bouncer import Bouncer
-from .replica.rebuild import Rebuild
-from .replica.stats import Stats
+from server.world.replica.simple_physics import SimplePhysics
+from server.world.replica.render import Render
+from server.world.replica.script import Script
+from server.world.replica.controllable_physics import ControllablePhysics
+from server.world.replica.character import Character
+from server.world.replica.destructible import Destructible
+from server.world.replica.skill import Skill
+from server.world.replica.component107 import Component107
+from server.world.replica.phantom_physics import PhantomPhysics
+from server.world.replica.bouncer import Bouncer
+from server.world.replica.rebuild import Rebuild
+from server.world.replica.stats import Stats
 
 from .structs import Vector3, Vector4, parse_ldf
 

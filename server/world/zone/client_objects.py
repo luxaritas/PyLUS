@@ -10,25 +10,25 @@ import random
 import sqlite3
 
 from pyraknet.bitstream import ReadStream, WriteStream, c_uint8, c_uint16, c_uint64, \
-                               c_int, c_int64, c_bit, c_ubyte, c_uint, c_int, c_ushort, c_float
+    c_int64, c_bit, c_ubyte, c_uint, c_ushort, c_float
 
-from server.plugin import Plugin, Action
+from server.plugin import Plugin
 from server.structs import Vector3, Vector4, LVLVector4, parse_ldf
 from server.enums import ZONE_IDS, ZONE_LUZ
 
-from server.replica import BaseData
-from server.replica import SimplePhysics
-from server.replica import Render
-from server.replica import Script
-from server.replica import ControllablePhysics
-from server.replica import Character
-from server.replica import Destructible
-from server.replica import Skill
-from server.replica import Component107
-from server.replica import PhantomPhysics
-from server.replica import Bouncer
-from server.replica import Rebuild
-from server.replica import Stats
+from server.world.replica import BaseData
+from server.world.replica import SimplePhysics
+from server.world.replica import Render
+from server.world.replica import Script
+from server.world.replica import ControllablePhysics
+from server.world.replica import Character
+from server.world.replica import Destructible
+from server.world.replica import Skill
+from server.world.replica import Component107
+from server.world.replica import PhantomPhysics
+from server.world.replica import Bouncer
+from server.world.replica import Rebuild
+from server.world.replica import Stats
 
 class ClientObjectLoader(Plugin):
     """
