@@ -1,11 +1,12 @@
 # PyLUS
-#### Python 3.6+ Lego Universe Server
+#### Python Lego Universe Server Emulator
 PyLUS serves as a Lego Universe server emulator. For more information visit https://lusprojects.github.io/.
 
 ### Dependencies
-[Python 3.6+](https://www.python.org/downloads/)
 
-[Mecurial](https://www.mercurial-scm.org/downloads)
+[Python 3.6 or >](https://www.python.org/downloads/)
+
+[Mecurial](https://www.mercurial-scm.org/downloads) - Necessary for [PyRakNet](https://bitbucket.org/lcdr/pyraknet)
 ```
 pip3 install -Ur requirements.txt
 ```
