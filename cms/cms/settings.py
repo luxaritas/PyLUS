@@ -37,10 +37,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = user_config['cms']['debug']
 
-ALLOWED_HOSTS = []
-if user_config['cms']['public_host'] != 'localhost':
-    ALLOWED_HOSTS.append(user_config['cms']['public_host'])
-
+ALLOWED_HOSTS = [user_config['cms']['public_host']]
 
 # Application definition
 
@@ -51,13 +48,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-  
+
     # Our apps
     'cms.game.apps.GameConfig',
     'cms.web.apps.WebConfig',
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -136,3 +134,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+if not user_config['cms']['debug']:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

@@ -75,7 +75,6 @@ class LUObject:
         self.spawner = spawner
         self.conn = conn
         self.components = self.get_components()
-        print(f'****** {self.name} x {self.position.x} y {self.position.y} z {self.position.z}')
 
     @property
     def name(self):

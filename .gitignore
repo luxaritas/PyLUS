@@ -65,6 +65,9 @@ config.yml
 # DB
 cms/db.sqlite3
 
+# Collected staticfiles
+static/
+
 # Pyaknet packet logs
 logs/
 

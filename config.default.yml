@@ -15,9 +15,11 @@ global:
 cms:
     # Whether to start the Django CMS when running the boot script
     enabled: *enable_all
-    # Whether to enable Django's debug mode (DO NOT ENABLE WHEN HOSTING PUBLICALLY)
+    # Whether to enable Django's debug mode (DO NOT ENABLE WHEN HOSTING PUBLICLY/OUTSIDE YOUR LAN)
+    # When false, forever-cacheable files and compression support will be enabled in whitenoise,
+    # as well as
     debug: False
-    # Cryptographic key used by Django in cryptographic fucntions.
+    # Cryptographic key used by Django in cryptographic functions.
     # `generate` will create a new secure key whenever the server starts, which is typically optimal
     # Do NOT change if you do not know how to properly generate a secure key
     secret_key: generate
