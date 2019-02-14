@@ -4,7 +4,7 @@ PyLUS serves as a Lego Universe server emulator. For more information visit http
 
 ### Dependencies
 
-[Python 3.6 or >](https://www.python.org/downloads/)
+[Python 3.6 or greater](https://www.python.org/downloads/)
 
 [Mecurial](https://www.mercurial-scm.org/downloads) - Necessary for [PyRakNet](https://bitbucket.org/lcdr/pyraknet)
 ```
