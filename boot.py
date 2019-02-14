@@ -26,19 +26,20 @@ if __name__ == '__main__':
         with open('config.default.yml') as f:
             user_config = yaml.load(f)
 
-    if User.objects.count() == 0:
-        print('It looks like there are no users configured yet. Please create an account for your first administrator:')
-        django_manage_call('createsuperuser')
-
     if user_config['cms']['enabled']:
         if not user_config['cms']['debug']:
             django_manage_call('collectstatic', interactive=False)
             django_manage_call('migrate', interactive=False)
+            if User.objects.count() == 0:
+                print('It looks like there are no users configured yet. Please create an account for your first '
+                      'administrator:')
+                django_manage_call('createsuperuser')
         cms_process = multiprocessing.Process(target=serve_cms, args=(
             user_config['cms']['listen_host'],
             user_config['cms']['listen_port']
         ))
         cms_process.start()
+
     servers = start_server.start(user_config)
 
     loop = asyncio.get_event_loop()
