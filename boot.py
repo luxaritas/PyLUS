@@ -27,6 +27,7 @@ if __name__ == '__main__':
     if user_config['cms']['enabled']:
         if not user_config['cms']['debug']:
             django_manage_call('collectstatic', interactive=False)
+            django_manage_call('migrate', interactive=False)
         cms_process = multiprocessing.Process(target=serve_cms, args=(
             user_config['cms']['listen_host'],
             user_config['cms']['listen_port']
