@@ -6,7 +6,7 @@ PyLUS is a Lego Universe server emulator. For more information visit https://lus
 
 [Python 3.6 or greater](https://www.python.org/downloads/)
 
-[Mecurial](https://www.mercurial-scm.org/downloads) - Necessary for [pyraknet](https://bitbucket.org/lcdr/pyraknet)
+[Mecurial](https://www.mercurial-scm.org/downloads) (necessary for downloading [pyraknet](https://bitbucket.org/lcdr/pyraknet) via pip)
 ```
 pip install -Ur requirements.txt
 ```
@@ -17,6 +17,6 @@ python boot.py
 ```
 
 ### Disclaimer
-LEGO<sup>Ⓡ</sup> is a trademark of the LEGO Group. PyLUS is not affiliated with LEGO<sup>Ⓡ</sup>. The LEGO Group has not endorsed or authorized the operation of this game and is not liable for any safety issues in relation to the operation of this game.
+LEGO<sup>Ⓡ</sup> is a trademark of the LEGO Group. The LEGO Group is not affiliated with PyLUS, has not endorsed or authorized its operation, and is not liable for any safety issues in relation to its operation.
 
-The project is experiemental and is a work inprogress with little to no support. *Caveat emptor*.
+The project is experiemental and is a work in progress with little to no support. *Caveat emptor*.
