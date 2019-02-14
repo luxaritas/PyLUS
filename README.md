@@ -1,12 +1,12 @@
 # PyLUS
-#### A Python3.6+ Lego Universe Server
-PyLUS attempts to recreate the Lego Universe server in order for the client to function. For more information visit https://lusprojects.github.io/.
+#### Python 3.6+ Lego Universe Server
+PyLUS serves as a Lego Universe server emulator. For more information visit https://lusprojects.github.io/.
 
-### Dependencies Setup
+### Dependencies
+[Python 3.6+](https://www.python.org/downloads/)
+[Mecurial](https://www.mercurial-scm.org/downloads)
 ```
-sudo apt install mercurial
-pip3 install -r requirements.txt
-python3 django_manage.py migrate
+pip3 install -Ur requirements.txt
 ```
 
 ### Run the Server
