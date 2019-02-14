@@ -8,9 +8,11 @@ import multiprocessing
 import asyncio
 import yaml
 import waitress
-from django.core.management import call_command as django_manage_call
 
 from cms.cms.wsgi import application as cms_app
+from django.core.management import call_command as django_manage_call
+from django.contrib.auth.models import User
+
 from server import start_server
 
 def serve_cms(host, port):
@@ -23,6 +25,10 @@ if __name__ == '__main__':
     except FileNotFoundError:
         with open('config.default.yml') as f:
             user_config = yaml.load(f)
+
+    if User.objects.count() == 0:
+        print('It looks like there are no users configured yet. Please create an account for your first administrator:')
+        django_manage_call('createsuperuser')
 
     if user_config['cms']['enabled']:
         if not user_config['cms']['debug']:
