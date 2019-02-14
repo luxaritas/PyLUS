@@ -1,5 +1,5 @@
 hg+https://bitbucket.org/lcdr/pyraknet@4251284
-pyyaml==3.13
+pyyaml==4.2b4
 bcrypt==3.1.6
 django==2.1.7
 waitress==1.2.1
