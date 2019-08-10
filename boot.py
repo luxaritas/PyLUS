@@ -21,10 +21,10 @@ def serve_cms(host, port):
 if __name__ == '__main__':
     try:
         with open('config.yml') as f:
-            user_config = yaml.load(f)
+            user_config = yaml.safe_load(f)
     except FileNotFoundError:
         with open('config.default.yml') as f:
-            user_config = yaml.load(f)
+            user_config = yaml.safe_load(f)
 
     if user_config['cms']['enabled']:
         if not user_config['cms']['debug']:
