@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3
 
 """
 Integrated server and CMS startup
