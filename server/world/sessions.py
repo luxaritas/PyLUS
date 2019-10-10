@@ -90,15 +90,6 @@ class SessionManager(Plugin):
         """
         Records the selected char for the given session
         """
-        print('\n'.join(line.lstrip() for line in f'''
-            account: {session.account}
-            token: {session.token}
-            ip: {session.ip}
-            port: {session.port}
-            clone: {session.clone}
-            created: {session.created}
-            character: {session.character}
-        '''.splitlines()))
         session.character = session.account.character_set.get(pk=char_id)
         session.save()
 
