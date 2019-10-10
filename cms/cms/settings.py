@@ -15,10 +15,10 @@ import yaml
 
 try:
     with open('config.yml') as f:
-        user_config = yaml.load(f)
+        user_config = yaml.safe_load(f)
 except FileNotFoundError:
     with open('config.default.yml') as f:
-        user_config = yaml.load(f)
+        user_config = yaml.safe_load(f)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
