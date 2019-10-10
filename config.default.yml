@@ -50,17 +50,17 @@ servers:
         enabled: *enable_all
 
     char:
-        listen_port: 2002
+        listen_port: 2003
         listen_host: *global_listen_host
-        public_port: 2002
+        public_port: 2003
         public_host: *global_public_host
         max_connections: *global_max_connections
         enabled: *enable_all
 
     venture_explorer:
-        listen_port: 2003
+        listen_port: 2005
         listen_host: *global_listen_host
-        public_port: 2003
+        public_port: 2005
         public_host: *global_public_host
         max_connections: *global_max_connections
         enabled: *enable_all

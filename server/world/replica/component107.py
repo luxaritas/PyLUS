@@ -2,7 +2,7 @@
 Component 107
 """
 
-from pyraknet.bitstream import c_bit, c_int64
+from bitstream import c_bit, c_int64
 
 from .component import Component
 

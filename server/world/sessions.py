@@ -6,7 +6,8 @@ import bcrypt
 
 from datetime import datetime, timedelta
 
-from pyraknet.bitstream import c_byte, c_ubyte, ReadStream
+from bitstream import c_byte, c_ubyte, ReadStream
+from pyraknet.transports.abc import Connection
 from django.utils.timezone import now
 
 from cms.game.models import Session, Account, Character
@@ -41,35 +42,35 @@ class SessionManager(Plugin):
             SessionInfo
         ]
 
-    def verify_session(self, packet, address):
+    def verify_session(self, packet: 'SessionInfo', conn: Connection):
         """
         Verifies a session
         """
         try:
             session = Session.objects.get(account__user__username=packet.username)
-            self.session_cache[address] = session
+            self.session_cache[conn.get_address()] = session
         except Session.DoesNotExist:
             session = None
 
         if not session or \
            not bcrypt.checkpw(packet.session_key.encode('latin1'), session.token) or \
                now() - session.created > timedelta(days=1):
-            self.destroy_session(address)
+            self.destroy_session(conn)
         else:
             # Client address may change when switching servers
-            session.ip = address[0]
-            session.port = address[1]
+            session.ip = conn.get_address()[0]
+            session.port = conn.get_address()[1]
             session.save()
-            self.server.handle('session:verify_success', session)
+            self.server.handle('session:verify_success', session, conn)
 
-    def allow_packet(self, data, address):
+    def allow_packet(self, data: ReadStream, conn: Connection):
         """
         Allows a packet
         """
         packet = Packet.deserialize(ReadStream(data), self.server.packets)
 
-        if not getattr(packet, 'allow_without_session') and not self.get_session(address):
-            self.destroy_session(address)
+        if not getattr(packet, 'allow_without_session') and not self.get_session(conn.get_address()):
+            self.destroy_session(conn)
 
     def get_session(self, address):
         """
@@ -77,17 +78,27 @@ class SessionManager(Plugin):
         """
         return self.session_cache.get(address)
 
-    def destroy_session(self, address):
+    def destroy_session(self, conn: Connection):
         """
         Destroys a session
         """
+        address = conn.get_address()
         Session.objects.filter(ip=address[0], port=address[1]).delete()
-        self.server.rnserver.close_connection(address)
+        conn.close()
         
     def set_char(self, session, char_id):
         """
         Records the selected char for the given session
         """
+        print('\n'.join(line.lstrip() for line in f'''
+            account: {session.account}
+            token: {session.token}
+            ip: {session.ip}
+            port: {session.port}
+            clone: {session.clone}
+            created: {session.created}
+            character: {session.character}
+        '''.splitlines()))
         session.character = session.account.character_set.get(pk=char_id)
         session.save()
 
@@ -100,7 +111,7 @@ class SessionInfo(Packet):
     allow_without_session = True
 
     @classmethod
-    def deserialize(cls, stream):
+    def deserialize(cls, stream: ReadStream):
         """
         Deserializes the packet
         """

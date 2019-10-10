@@ -2,7 +2,7 @@
 SimplePhysics component
 """
 
-from pyraknet.bitstream import c_bit, c_float
+from bitstream import c_bit, c_float
 
 from .component import Component
 

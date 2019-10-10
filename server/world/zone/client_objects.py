@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 import random
 import sqlite3
 
-from pyraknet.bitstream import ReadStream, WriteStream, c_uint8, c_uint16, c_uint64, \
+from bitstream import ReadStream, WriteStream, c_uint8, c_uint16, c_uint64, \
     c_int64, c_bit, c_ubyte, c_uint, c_ushort, c_float
 
 from server.plugin import Plugin
@@ -29,6 +29,7 @@ from server.world.replica import PhantomPhysics
 from server.world.replica import Bouncer
 from server.world.replica import Rebuild
 from server.world.replica import Stats
+from server.world.replica import Trigger
 
 class ClientObjectLoader(Plugin):
     """

@@ -5,7 +5,8 @@ Handles world entry
 import zlib
 from xml.etree import ElementTree
 
-from pyraknet.bitstream import WriteStream, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bool
+from bitstream import WriteStream, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bool
+from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import Packet, LegoData
@@ -31,7 +32,7 @@ class WorldJoin(Plugin):
             Action('pkt:client_load_complete', self.client_load_complete, 10),
         ]
 
-    def load_world(self, session):
+    def load_world(self, session, conn: Connection):
         zone_id = ZONE_IDS[self.server.type]
         self.server.handle('world:zone_entered', session, zone_id)
 
@@ -42,10 +43,10 @@ class WorldJoin(Plugin):
                         Vector3(*ZONE_SPAWNPOINTS[zone_id]),
                         0) # Activity
 
-        self.server.rnserver.send(res, (session.ip, session.port))
+        conn.send(res)
 
-    def client_load_complete(self, packet, address):
-        session = self.server.handle_until_return('session:get_session', address)
+    def client_load_complete(self, packet, conn: Connection):
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
 
         char_info = DetailedUserInfo(
             session.account.user.pk,
@@ -54,18 +55,18 @@ class WorldJoin(Plugin):
             session.character.pk,
             missions=[Mission(mission=1727, character=session.character, state=8, times_completed=1, last_completion=0)]
         )
-        self.server.rnserver.send(char_info, address)
+        conn.send(char_info)
 
-        self.server.repman.add_participant(address)
+        self.server.repman.add_participant(conn)
 
         player = Player(session.character, Vector3(*ZONE_SPAWNPOINTS[ZONE_IDS[self.server.type]]), Vector4(0,0,0))
         self.server.repman.construct(player, True)
 
         obj_load = ServerGameMessage(session.character.pk, GameMessageID.DONE_LOADING_OBJECTS)
-        self.server.rnserver.send(obj_load, address)
+        conn.send(obj_load)
 
         player_ready = ServerGameMessage(session.character.pk, GameMessageID.PLAYER_READY)
-        self.server.rnserver.send(player_ready, address)
+        conn.send(player_ready)
 
 class WorldInfo(Packet):
     """

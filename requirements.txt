@@ -1,4 +1,6 @@
-hg+https://bitbucket.org/lcdr/pyraknet@4251284
+hg+https://bitbucket.org/lcdr/event_dispatcher@c5fa73c
+hg+https://bitbucket.org/lcdr/bitstream@7045acf
+hg+https://bitbucket.org/lcdr/pyraknet@600149e
 pyyaml==5.1.2
 bcrypt==3.1.7
 django==2.2.4

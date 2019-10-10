@@ -5,7 +5,7 @@ Structs
 from typing import overload
 from xml.etree import ElementTree
 
-from pyraknet.bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
+from bitstream import WriteStream, Serializable, c_uint8, c_uint16, c_uint32, c_int32, c_int64, c_float, c_bit, \
                                c_double, c_uint, c_bool
 
 from .enums import PACKET_IDS, PACKET_NAMES, LEGO_DATA_TYPES, LDF_VALUE_TYPES
@@ -163,7 +163,7 @@ class LUHeader(Serializable):
 
     @classmethod
     def deserialize(cls, stream):
-        stream.read(c_uint8)  # rntype
+        # RakNet ID is NOT read because pyraknet already removes that for us (however we do need to write it ourselves)
         remote_conn_id = stream.read(c_uint16)
         packet_id = stream.read(c_uint32)
         stream.read(c_uint8)  # unknown

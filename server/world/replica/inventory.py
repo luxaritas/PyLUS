@@ -2,7 +2,7 @@
 Inventory component
 """
 
-from pyraknet.bitstream import c_bit, c_uint32
+from bitstream import c_bit, c_uint32
 
 from .component import Component
 

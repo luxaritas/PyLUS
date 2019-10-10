@@ -2,7 +2,8 @@
 World manager
 """
 
-from pyraknet.bitstream import c_uint16, c_int64, c_bool
+from bitstream import ReadStream, WriteStream, c_uint16, c_int64, c_bool
+from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import Packet, CString
@@ -29,11 +30,11 @@ class WorldRedirect(Plugin):
             JoinWorldRequest,
         ]
 
-    def join_world_request(self, packet, address):
+    def join_world_request(self, packet: 'JoinWorldRequest', conn: Connection):
         """
         Handles initial redirect from char list
         """
-        session = self.server.handle_until_return('session:get_session', address)
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         # One of the plugins listening is expected to set session.character
         self.server.handle('session:char_selected', session, packet.character_id)
 
@@ -41,7 +42,7 @@ class WorldRedirect(Plugin):
         zone_conf = self.server.config['servers'][ZONE_NAMES[last_zone]]
 
         res = RedirectToServer(zone_conf['public_host'], zone_conf['public_port'])
-        self.server.rnserver.send(res, address)
+        conn.send(res)
 
 class JoinWorldRequest(Packet):
     """
@@ -53,7 +54,7 @@ class JoinWorldRequest(Packet):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
     @classmethod
-    def deserialize(cls, stream):
+    def deserialize(cls, stream: ReadStream):
         """
         Deserializes the packet
         """
@@ -69,7 +70,7 @@ class RedirectToServer(Packet):
     def __init__(self, ip, port, mythran_notification=False):
         super().__init__(**{k: v for k, v in locals().items() if k != 'self'})
 
-    def serialize(self, stream):
+    def serialize(self, stream: WriteStream):
         super().serialize(stream)
         stream.write(CString(self.ip, allocated_length=33))
         stream.write(c_uint16(self.port))

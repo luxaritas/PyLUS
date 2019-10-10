@@ -9,7 +9,11 @@ import os
 import sys
 import yaml
 
-from pyraknet.server import Server as RNServer, Event as RNEvent
+from event_dispatcher import EventDispatcher
+
+from pyraknet.server import Server as RNServer
+from pyraknet.messages import Message as RNMessage
+from pyraknet.transports.abc import Connection
 from pyraknet.replicamanager import ReplicaManager
 
 from .plugin import get_derivatives, Plugin
@@ -23,10 +27,9 @@ class Server:
     Main server class
     """
     def __init__(self, server_type: str, host: str, port: int, max_connections: int, config: dict):
-        self.rnserver = RNServer((host, port), max_connections, b'3.25 ND1')
-        self.rnserver.add_handler(RNEvent.NetworkInit, lambda addr: self.handle('rn:network_init', addr))
-        self.rnserver.add_handler(RNEvent.Disconnect, lambda addr: self.handle('rn:disconnect', addr))
-        self.rnserver.add_handler(RNEvent.UserPacket, lambda data, addr: self.handle('rn:user_packet', data, addr))
+        self.rndispatcher = EventDispatcher()
+        self.rnserver = RNServer((host, port), max_connections, b'3.25 ND1', None, self.rndispatcher)
+        self.rndispatcher.add_listener(RNMessage.UserPacket, self.on_user_packet)
         self.config = config
         self.type = server_type
         self.plugins = []
@@ -34,7 +37,7 @@ class Server:
         self.packets = {}
         
         if self.type not in ['auth', 'chat', 'char']:
-            self.repman = ReplicaManager(self.rnserver)
+            self.repman = ReplicaManager(self.rndispatcher)
 
         self.register_plugins('server.core')
         if self.type in ['auth', 'chat']:
@@ -45,6 +48,9 @@ class Server:
                 self.register_plugins('server.world.zone')
         
         log.info(f'{self.type.upper()} - Started up')
+
+    def on_user_packet(self, data, conn):
+        self.handle('rn:user_packet', data, conn)
 
     def register_plugins(self, package: str):
         """

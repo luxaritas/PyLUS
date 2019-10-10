@@ -2,7 +2,8 @@
 Character listt
 """
 
-from pyraknet.bitstream import Serializable, c_int64, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+from bitstream import Serializable, c_int64, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import Packet
@@ -30,15 +31,15 @@ class CharacterList(Plugin):
             CharacterListResponse
         ]
 
-    def character_list_request(self, packet, address):
+    def character_list_request(self, packet: 'CharacterListRequest', conn: Connection):
         """
         Handles a char list request
         """
-        session = self.server.handle_until_return('session:get_session', address)
-        self.server.handle_until_value('char:send_list', True, session)
+        self.server.handle_until_value('char:send_list', True, conn)
         
         
-    def send_char_list(self, session):
+    def send_char_list(self, conn: Connection):
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         characters = self.server.handle_until_return('char:characters', session.account)
         front_char = self.server.handle_until_return('char:front_char', characters)
 
@@ -73,7 +74,7 @@ class CharacterList(Plugin):
             serializable_characters.append(serializable_character)
         
         res = CharacterListResponse(serializable_characters, front_char_id)
-        self.server.rnserver.send(res, (session.ip, session.port))
+        conn.send(res)
         
         return True
 

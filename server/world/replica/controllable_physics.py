@@ -2,7 +2,7 @@
 Controllable physics
 """
 
-from pyraknet.bitstream import c_bit, c_uint32, c_float, c_int64
+from bitstream import c_bit, c_uint32, c_float, c_int64
 from pyraknet.replicamanager import Replica
 
 from .component import Component

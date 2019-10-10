@@ -5,7 +5,7 @@
 import sqlite3
 import os.path
 
-from pyraknet.bitstream import ReadStream, c_uint, c_float, c_ubyte, c_uint64, c_ushort, c_int64
+from bitstream import ReadStream, c_uint, c_float, c_ubyte, c_uint64, c_ushort, c_int64
 
 from server.world.replica.simple_physics import SimplePhysics
 from server.world.replica.render import Render

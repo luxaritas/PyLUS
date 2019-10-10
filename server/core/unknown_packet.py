@@ -5,7 +5,7 @@ Unknown packet
 import logging
 
 from server.plugin import Plugin, Action
-
+from server.structs import Packet
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class UnknownHandler(Plugin):
             Action('pkt:unknown_packet', self.log_unknown, 10)
         ]
 
-    def log_unknown(self, packet):
+    def log_unknown(self, packet: Packet):
         """
         Logs an unknown packet
         """

@@ -2,7 +2,7 @@
 Render component
 """
 
-from pyraknet.bitstream import c_uint32
+from bitstream import c_uint32
 from pyraknet.replicamanager import Replica
 
 from .component import Component

@@ -2,9 +2,9 @@
 Handshake
 """
 
-from pyraknet.bitstream import c_uint16, c_uint32
+from bitstream import c_uint16, c_uint32
+from pyraknet.transports.abc import Connection
 from server.plugin import Plugin, Action, Packet
-
 
 class Handshake(Plugin):
     """
@@ -26,12 +26,12 @@ class Handshake(Plugin):
             HandshakePacket,
         ]
 
-    def handshake(self, packet, address):
+    def handshake(self, packet: 'HandshakePacket', conn: Connection):
         """
         Makes a handshake with a client
         """
         remote_conn_type = 0x01 if self.server.type == 'auth' else 0x04
-        self.server.rnserver.send(HandshakePacket(remote_conn_type), address)
+        conn.send(HandshakePacket(remote_conn_type))
 
 
 class HandshakePacket(Packet):

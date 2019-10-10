@@ -2,7 +2,7 @@
 Enums
 """
 
-from pyraknet.bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
+from bitstream import c_int32, c_float, c_double, c_uint32, c_bool, c_int64
 
 LDF_VALUE_TYPES = {
     0: str,

@@ -2,7 +2,7 @@
 Base data
 """
 
-from pyraknet.bitstream import c_uint8, c_uint32, c_int32, c_int64, c_float, c_bit
+from bitstream import c_uint8, c_uint32, c_int32, c_int64, c_float, c_bit
 from pyraknet.replicamanager import Replica
 
 

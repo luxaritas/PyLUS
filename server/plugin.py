@@ -7,8 +7,10 @@ import importlib
 import pkgutil
 
 from abc import ABC, abstractmethod
-from typing import List, NamedTuple, Callable, overload
-from pyraknet.bitstream import Serializable, WriteStream
+from typing import List, NamedTuple, Callable, overload, TYPE_CHECKING
+from bitstream import Serializable, WriteStream, ReadStream
+if (TYPE_CHECKING):
+    from .start_server import Server
 from .structs import LUHeader
 
 class Packet(Serializable):
@@ -39,7 +41,7 @@ class Packet(Serializable):
         self.serialize(stream)
         return bytes(stream)
 
-    def serialize(self, stream):
+    def serialize(self, stream: WriteStream):
         """
         Serialize the packet
         """
@@ -48,7 +50,7 @@ class Packet(Serializable):
             stream.write(self.data)
 
     @classmethod
-    def deserialize(cls, stream, packet_types):
+    def deserialize(cls, stream: ReadStream, packet_types):
         """
         Deserialize the packet
         """
@@ -74,7 +76,7 @@ class Plugin(ABC):
     """
     Plugin class
     """
-    def __init__(self, server):
+    def __init__(self, server: 'Server'):
         self.server = server
 
     @abstractmethod
@@ -90,7 +92,7 @@ class Plugin(ABC):
         """
         return []
 
-def isderivative(member, cls):
+def isderivative(member, cls: object) -> bool:
     """
     Checks if member is a plugin
     """

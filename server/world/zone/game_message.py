@@ -2,12 +2,12 @@
 Game message handling
 """
 
-from pyraknet.bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8, c_float
+from bitstream import ReadStream, WriteStream, c_int64, c_int, c_bit, c_uint32, c_uint8, c_float
+from pyraknet.transports.abc import Connection
 
 from server.enums import GameMessageID, MissionLockState
 from server.structs import ClientGameMessage, ServerGameMessage
 from server.plugin import Action, Plugin
-
 
 class GameMessageHandler(Plugin):
     """
@@ -29,7 +29,7 @@ class GameMessageHandler(Plugin):
             ClientGameMessage
         ]
 
-    def client_game_message(self, packet, address):
+    def client_game_message(self, packet: ClientGameMessage, conn: Connection):
         """
         Handles the game messages
         """
@@ -37,23 +37,23 @@ class GameMessageHandler(Plugin):
             stream = ReadStream(packet.extra_data)
 
         if packet.message_id == GameMessageID.REQUEST_USE:
-            self.request_use(packet, address, stream)
+            self.request_use(packet, conn, stream)
         elif packet.message_id == GameMessageID.MISSION_DIALOGUE_OK:
-            self.mission_accept(packet, address, stream)
+            self.mission_accept(packet, conn, stream)
         elif packet.message_id == GameMessageID.REQUEST_LINKED_MISSION:
-            self.request_linked_mission(packet, address, stream)
+            self.request_linked_mission(packet, conn, stream)
         elif packet.message_id == GameMessageID.HAS_BEEN_COLLECTED:
-            self.collected(packet, address, stream)
+            self.collected(packet, conn, stream)
         elif packet.message_id == 888:
             pass
         else:
             print(f'Unhandled game message: {packet.message_id}')
 
-    def request_use(self, packet, address, stream):
+    def request_use(self, packet, conn: Connection, stream: ReadStream):
         """
         Handles the request use game message
         """
-        session = self.server.handle_until_return('session:get_session', address)
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         clone = self.server.handle_until_return('world:get_clone', session.clone)
         char = self.server.handle_until_return('char:front_char', session.account.character_set.all())
         char_missions = self.server.handle_until_return('char:get_missions', char.pk)
@@ -87,7 +87,7 @@ class GameMessageHandler(Plugin):
                         self.server.handle('char:complete_mission', char.pk, mission[0])
 
                         msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
-                        self.server.rnserver.send(msg, address)
+                        conn.send(msg)
 
                         return
 
@@ -99,9 +99,9 @@ class GameMessageHandler(Plugin):
 
                 msg = ServerGameMessage(packet.objid, GameMessageID.OFFER_MISSION, c_int(mission[0]) + c_int64(objid))
 
-                self.server.rnserver.send(msg, address)
+                conn.send(msg)
 
-    def request_linked_mission(self, packet, address, stream):
+    def request_linked_mission(self, packet, conn: Connection, stream: ReadStream):
         """
         Handles the request linked mission game message
         """
@@ -113,7 +113,7 @@ class GameMessageHandler(Plugin):
         print(f'Object ID: {objid}')
         print(f'Offered: {offered}')
 
-    def mission_accept(self, packet, address, stream):
+    def mission_accept(self, packet, conn: Connection, stream: ReadStream):
         """
         Handles the mission dialogue ok game message
         """
@@ -127,7 +127,7 @@ class GameMessageHandler(Plugin):
         print(f'State: {state}')
         print(f'Responder: {responder_objid}')
 
-        session = self.server.handle_until_return('session:get_session', address)
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
 
         if complete:
@@ -152,7 +152,7 @@ class GameMessageHandler(Plugin):
             #     wstr.write(c_uint8(0))
 
             #     msg = ServerGameMessage(packet.objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
-            #     self.server.rnserver.send(msg, address)
+            #     conn.send(msg)
 
             wstr = WriteStream()
             wstr.write(c_int(mission_id))
@@ -161,9 +161,9 @@ class GameMessageHandler(Plugin):
 
             msg = ServerGameMessage(responder_objid, GameMessageID.NOTIFY_MISSION, wstr)
 
-        self.server.rnserver.send(msg, address)
+        conn.send(msg)
 
-    def collected(self, packet, address, stream):
+    def collected(self, packet, conn: Connection, stream: ReadStream):
         """
         Handles the has been collected game message
         """
@@ -174,7 +174,7 @@ class GameMessageHandler(Plugin):
         print(f'ID: {packet.objid}')
         print(f'Player: {objid}')
 
-        session = self.server.handle_until_return('session:get_session', address)
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         char = self.server.handle_until_return('char:characters', session.account.user.id)[session.account.front_character]
         clone = self.server.handle_until_return('world:get_clone', session.clone)
         char_missions = self.server.handle_until_return('char:get_missions', char.pk)
@@ -201,6 +201,6 @@ class GameMessageHandler(Plugin):
 
                         msg = ServerGameMessage(objid, GameMessageID.NOTIFY_MISSION_TASK, wstr)
 
-                        self.server.rnserver.send(msg, address)
+                        conn.send(msg)
 
                         return

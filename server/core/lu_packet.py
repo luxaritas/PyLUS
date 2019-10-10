@@ -4,7 +4,9 @@ Packet router
 
 import logging
 
-from pyraknet.bitstream import ReadStream
+from bitstream import ReadStream
+from pyraknet.transports.abc import Connection
+
 from server.plugin import Plugin, Action, Packet
 from server.structs import LUHeader
 
@@ -24,7 +26,7 @@ class PacketRouter(Plugin):
             Action('rn:user_packet', self.on_packet, 10)
         ]
 
-    def on_packet(self, data, address):
+    def on_packet(self, data: ReadStream, conn: Connection):
         """
         Packet handler
         """
@@ -34,4 +36,4 @@ class PacketRouter(Plugin):
             self.server.handle('pkt:unknown_packet', packet)
         else:
             log.debug(f'[{self.server.type}] Recieved LU Packet {packet.header.packet_name}')
-            self.server.handle(f'pkt:{packet.header.packet_name}', packet, address)
+            self.server.handle(f'pkt:{packet.header.packet_name}', packet, conn)

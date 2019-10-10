@@ -2,7 +2,7 @@
 PhantomPhysics component
 """
 
-from pyraknet.bitstream import c_bit, c_float, c_uint32
+from bitstream import c_bit, c_float, c_uint32
 
 from .component import Component
 from server.structs import Vector3, Vector4

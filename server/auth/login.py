@@ -2,7 +2,8 @@
 Login plugin
 """
 
-from pyraknet.bitstream import Serializable, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+from bitstream import WriteStream, ReadStream, Serializable, c_uint8, c_uint16, c_uint32, c_uint64, c_bool
+from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import LUHeader, Packet, CString
@@ -29,7 +30,7 @@ class Login(Plugin):
             LoginResponse
         ]
 
-    def login_request(self, packet, address):
+    def login_request(self, packet: 'LoginRequest', conn: Connection):
         """
         Handles a login request
         """
@@ -41,7 +42,7 @@ class Login(Plugin):
             new_subscriber = False
             ftp = False
         else:
-            if self.server.handle_until_value('auth:check_banned', True, account, address):
+            if self.server.handle_until_value('auth:check_banned', True, account, conn.get_address()):
                 auth_status = 'banned'
             elif self.server.handle_until_value('auth:check_permission', False, 'login', account):
                 auth_status = 'not_permitted'
@@ -58,7 +59,7 @@ class Login(Plugin):
                 auth_status = 'success'
 
             if auth_status == 'success':
-                token = self.server.handle_until_return('session:new_session', account, address)
+                token = self.server.handle_until_return('session:new_session', account, conn.get_address())
                 new_subscriber = self.server.handle_until_value('auth:new_subscriber', True, account)
                 ftp = self.server.handle_until_value('auth:free_to_play', True, account)
 
@@ -71,7 +72,7 @@ class Login(Plugin):
 
         res = LoginResponse(auth_status, token, char_ip, chat_ip, char_port, chat_port, new_subscriber, ftp, permission_error)
 
-        self.server.rnserver.send(res, address)
+        conn.send(res)
 
 
 class LoginRequest(Packet):
@@ -82,7 +83,7 @@ class LoginRequest(Packet):
     allow_without_session = True
 
     @classmethod
-    def deserialize(cls, stream):
+    def deserialize(cls, stream: ReadStream):
         """
         Deserializes the packet
         """
@@ -107,12 +108,12 @@ class GameVersion(Serializable):
     """
     Game version serializable
     """
-    def __init__(self, major, current, minor):
+    def __init__(self, major: int, current: int, minor: int):
         self.major = major
         self.current = current
         self.minor = minor
 
-    def serialize(self, stream):
+    def serialize(self, stream: WriteStream):
         """
         Serializes the game version
         """
@@ -121,7 +122,7 @@ class GameVersion(Serializable):
         stream.write(c_uint16(self.minor))
 
     @classmethod
-    def deserialize(cls, stream):
+    def deserialize(cls, stream: ReadStream):
         """
         Deserializes the game version
         """
@@ -157,7 +158,7 @@ class LoginResponse(Packet):
             'not_activated': 0x0e,
         }.get(self.auth_status)
 
-    def serialize(self, stream):
+    def serialize(self, stream: WriteStream):
         """
         Serializes the packet
         """

@@ -2,7 +2,7 @@
 Destructible component
 """
 
-from pyraknet.bitstream import c_bit
+from bitstream import c_bit
 from .component import Component
 
 

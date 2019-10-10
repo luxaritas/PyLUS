@@ -2,7 +2,8 @@
 Create character
 """
 
-from pyraknet.bitstream import Serializable, c_uint32, c_uint8
+from bitstream import Serializable, c_uint32, c_uint8
+from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import Packet
@@ -28,11 +29,11 @@ class CreateCharacter(Plugin):
             MinifigureCreateRequest
         ]
 
-    def minifig_create_request(self, packet, address):
+    def minifig_create_request(self, packet: 'MinifigureCreateRequest', conn: Connection):
         """
         Handles the request
         """
-        session = self.server.handle_until_return('session:get_session', address)
+        session = self.server.handle_until_return('session:get_session', conn.get_address())
         # TODO: Do validation which could result in other status codes
         status = 'success'
 
@@ -64,8 +65,8 @@ class CreateCharacter(Plugin):
                            0,  # last instance
                            0)  # last clone
 
-        self.server.rnserver.send(MinifigureCreateResponse(status), address)
-        self.server.handle_until_value('char:send_list', True, session)
+        conn.send(MinifigureCreateResponse(status))
+        self.server.handle_until_value('char:send_list', True, conn)
 
 class MinifigureCreateRequest(Packet):
     """

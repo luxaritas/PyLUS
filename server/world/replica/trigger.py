@@ -2,7 +2,7 @@
 Trigger component
 """
 
-from pyraknet.bitstream import c_bit, c_int32
+from bitstream import c_bit, c_int32
 
 from .component import Component
 
