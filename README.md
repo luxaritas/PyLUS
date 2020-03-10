@@ -6,8 +6,8 @@ PyLUS is a LEGO Universe server emulator. For more information visit https://lus
 
 [Python 3.6 or greater](https://www.python.org/downloads/)
 
-[Mecurial](https://www.mercurial-scm.org/downloads) (necessary for downloading [pyraknet](https://bitbucket.org/lcdr/pyraknet) via pip)
 ```
+pip install mercurial
 pip install -Ur requirements.txt
 ```
 
