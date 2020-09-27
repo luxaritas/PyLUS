@@ -6,8 +6,8 @@ PyLUS is a LEGO Universe server emulator. For more information visit https://lus
 
 [Python 3.6 or greater](https://www.python.org/downloads/)
 
+
 ```
-pip install mercurial
 pip install -Ur requirements.txt
 ```
 
