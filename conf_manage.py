@@ -1,3 +1,6 @@
+"""
+Configuration loading and saving.
+"""
 from pathlib import Path
 import yaml
 
@@ -9,6 +12,10 @@ ENABLE_ALL = True
 
 
 class SaveLoadConfig:
+    """
+    A class that will automatically take any non-protected variables and allow them to be saved to and loaded from disk.
+    While you could subclass this (untested), you should use the decorator instead.
+    """
     def __init__(self):
         self._from_disk: bool = False
 
@@ -52,19 +59,28 @@ class SaveLoadConfig:
         return output_dict
 
     def pre_save(self):
+        # Decorated class should override as needed.
         pass
 
     def post_save(self):
+        # Decorated class should override as needed.
         pass
 
     def pre_load(self):
+        # Decorated class should override as needed.
         pass
 
     def post_load(self):
+        # Decorated class should override as needed.
         pass
 
 
 def config_file(path: str):
+    """
+    Decorator that turns a given class into a config class with save and load methods.
+    @param path: File path to save the class to.
+    @return: Decorated class.
+    """
     def decorator(cls):
         class ConfigWrapperClass(cls, SaveLoadConfig, path=path):
             def __init__(self, **kwargs):
@@ -88,67 +104,9 @@ class BasicConfig:
         return output_dict
 
 
-class GlobalsConfig(BasicConfig):
-    def __init__(self, state: dict = None):
-        self.listen_host = GLOBAL_LISTEN_HOST
-        self.public_host = GLOBAL_PUBLIC_HOST
-        self.max_connections = GLOBAL_MAX_CONNECTIONS
-        self.enable_all = ENABLE_ALL
-        if state:
-            self.from_dict(state)
-
-
-class CMSConfig(BasicConfig):
-    def __init__(self, state: dict = None):
-        self.enabled = ENABLE_ALL
-        self.debug = False
-        self.secret_key = "generate"
-        self.listen_host = GLOBAL_LISTEN_HOST
-        self.listen_port = 8080
-        self.public_host = GLOBAL_PUBLIC_HOST
-        self.public_port = 8080
-        if state:
-            self.from_dict(state)
-
-
-class BasicServer(BasicConfig):
-    def __init__(self, port: int, name: str, state: dict = None):
-        self._name = name
-        self.listen_port = port
-        self.listen_host = GLOBAL_LISTEN_HOST
-        self.public_port = port
-        self.public_host = GLOBAL_PUBLIC_HOST
-        self.max_connections = GLOBAL_MAX_CONNECTIONS
-        self.enabled = ENABLE_ALL
-        if state:
-            self.from_dict(state)
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-
-class ServersConfig(BasicConfig):
-    def __init__(self, state: dict = None):
-        self.auth = BasicServer(1001, "auth")
-        self.chat = BasicServer(2001, "chat")
-        self.char = BasicServer(2003, "char")
-        self.venture_explorer = BasicServer(2005, "venture_explorer")
-        if state:
-            self.from_dict(state)
-
-    def __iter__(self):
-        return iter([self.auth, self.chat, self.char, self.venture_explorer])
-
-    def from_dict(self, state: dict):
-        self.auth = BasicServer(1001, "auth", state["auth"])
-        self.chat = BasicServer(2001, "chat", state["chat"])
-        self.char = BasicServer(2003, "char", state["char"])
-        self.venture_explorer = BasicServer(2005, "venture_explorer", state["venture_explorer"])
-
-    def to_dict(self) -> dict:
-        return {"auth": self.auth.to_dict(), "chat": self.chat.to_dict(), "char": self.char.to_dict(),
-                "venture_explorer": self.venture_explorer.to_dict()}
+"""
+From this point down, edit to add new options or change the default values.
+"""
 
 
 @config_file(path="config.default.yml")
@@ -185,3 +143,72 @@ class MainConfig:
         self.globals = self.globals.to_dict()
         self.cms = self.cms.to_dict()
         self.servers = self.servers.to_dict()
+
+
+class ServersConfig(BasicConfig):
+    def __init__(self, state: dict = None):
+        self.auth = BasicServer(1001, "auth")
+        self.chat = BasicServer(2001, "chat")
+        self.char = BasicServer(2003, "char")
+        self.venture_explorer = BasicServer(2005, "venture_explorer")
+        if state:
+            self.from_dict(state)
+
+    def __iter__(self):
+        return iter([self.auth, self.chat, self.char, self.venture_explorer])
+
+    def from_dict(self, state: dict):
+        self.auth = BasicServer(1001, "auth", state["auth"])
+        self.chat = BasicServer(2001, "chat", state["chat"])
+        self.char = BasicServer(2003, "char", state["char"])
+        self.venture_explorer = BasicServer(2005, "venture_explorer", state["venture_explorer"])
+
+    def to_dict(self) -> dict:
+        return {"auth": self.auth.to_dict(), "chat": self.chat.to_dict(), "char": self.char.to_dict(),
+                "venture_explorer": self.venture_explorer.to_dict()}
+
+
+class BasicServer(BasicConfig):
+    def __init__(self, port: int, name: str, state: dict = None):
+        self._name = name
+        self.listen_port = port
+        self.listen_host = GLOBAL_LISTEN_HOST
+        self.public_port = port
+        self.public_host = GLOBAL_PUBLIC_HOST
+        self.max_connections = GLOBAL_MAX_CONNECTIONS
+        self.enabled = ENABLE_ALL
+        if state:
+            self.from_dict(state)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+
+class GlobalsConfig(BasicConfig):
+    def __init__(self, state: dict = None):
+        self.listen_host = GLOBAL_LISTEN_HOST
+        self.public_host = GLOBAL_PUBLIC_HOST
+        self.max_connections = GLOBAL_MAX_CONNECTIONS
+        self.enable_all = ENABLE_ALL
+        if state:
+            self.from_dict(state)
+
+
+class CMSConfig(BasicConfig):
+    def __init__(self, state: dict = None):
+        self.enabled = ENABLE_ALL
+        self.debug = False
+        self.secret_key = "generate"
+        self.listen_host = GLOBAL_LISTEN_HOST
+        self.listen_port = 8080
+        self.public_host = GLOBAL_PUBLIC_HOST
+        self.public_port = 8080
+        if state:
+            self.from_dict(state)
+
+
+
+
+
+
