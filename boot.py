@@ -6,7 +6,6 @@ Integrated server and CMS startup
 
 import multiprocessing
 import asyncio
-# import yaml
 import waitress
 
 from cms.cms.wsgi import application as cms_app
