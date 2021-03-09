@@ -128,10 +128,7 @@ class Server:
 
 def start(config: MainConfig):
     servers = {}
-    # for srv_type, conf in config['servers'].items():
     for server in config.servers:
         if server.enabled:
             servers[server.name] = Server(server.name, server.listen_host, server.listen_port, server.max_connections, config)
-    #     if conf['enabled']:
-    #         servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'], config)
     return servers

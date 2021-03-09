@@ -22,29 +22,12 @@ def serve_cms(host, port):
 
 
 if __name__ == '__main__':
-    # test = MainConfig()
-    # test.load()
-    # test._data_path = "test.yaml"
-    # test.save()
-    # try:
-    #     with open('config.yml') as f:
-    #         user_config = yaml.safe_load(f)
-    # except FileNotFoundError:
-    #     with open('config.default.yml') as f:
-    #         user_config = yaml.safe_load(f)
-    # config = UserConfig()
-    # config.load()
-    # if not config.from_disk:
-    #     config = DefaultConfig()
-    #     config.load()
     config = MainConfig()
     config.load()
     if not config.from_disk:
         config.save()
 
-    # if user_config['cms']['enabled']:
     if config.cms.enabled:
-        # if not user_config['cms']['debug']:
         if not config.cms.debug:
             django_manage_call('collectstatic', interactive=False)
             django_manage_call('migrate', interactive=False)
@@ -53,20 +36,16 @@ if __name__ == '__main__':
                       'administrator:')
                 django_manage_call('createsuperuser')
         cms_process = multiprocessing.Process(target=serve_cms, args=(
-            # user_config['cms']['listen_host'],
             config.cms.listen_host,
             config.cms.listen_port
-            # user_config['cms']['listen_port']
         ))
         cms_process.start()
 
-    # servers = start_server.start(user_config)
     servers = start_server.start(config)
 
     loop = asyncio.get_event_loop()
     loop.run_forever()
 
     loop.close()
-    # if user_config['cms']['enabled']:
     if config.cms.enabled:
         cms_process.join()

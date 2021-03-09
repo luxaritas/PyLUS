@@ -39,7 +39,6 @@ class WorldRedirect(Plugin):
         self.server.handle('session:char_selected', session, packet.character_id)
 
         last_zone = self.server.handle_until_return('char:initial_zone', session.character)
-        # zone_conf = self.server.config['servers'][ZONE_NAMES[last_zone]]
         zone_conf = self.server.config.servers.to_dict()[ZONE_NAMES[last_zone]]
 
         res = RedirectToServer(zone_conf['public_host'], zone_conf['public_port'])
