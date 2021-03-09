@@ -7,6 +7,7 @@ from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
 from server.structs import LUHeader, Packet, CString
+from conf_manage import MainConfig
 
 
 class Login(Plugin):
@@ -64,11 +65,15 @@ class Login(Plugin):
                 ftp = self.server.handle_until_value('auth:free_to_play', True, account)
 
         permission_error = 'You do not have permission to log in to this server' if auth_status == 'not_permitted' else ''
-        
-        char_ip = self.server.config['servers']['char']['public_host']
-        chat_ip = self.server.config['servers']['chat']['public_host']
-        char_port = self.server.config['servers']['char']['public_port']
-        chat_port = self.server.config['servers']['chat']['public_port']
+
+        # char_ip = self.server.config['servers']['char']['public_host']
+        char_ip = self.server.config.servers.char.public_host
+        # chat_ip = self.server.config['servers']['chat']['public_host']
+        chat_ip = self.server.config.servers.chat.public_host
+        # char_port = self.server.config['servers']['char']['public_port']
+        char_port = self.server.config.servers.char.public_port
+        # chat_port = self.server.config['servers']['chat']['public_port']
+        chat_port = self.server.config.servers.chat.public_port
 
         res = LoginResponse(auth_status, token, char_ip, chat_ip, char_port, chat_port, new_subscriber, ftp, permission_error)
 

@@ -1,7 +1,7 @@
 # To make changes, copy `config.default.yml` to `config.yml`, and the boot script will automatically use it in place of the default
 
 # Defaults across all servers
-global:
+globals:
     # Default IP/domain that server instances will accept incoming connections on
     listen_host: &global_listen_host localhost
     # Default IP/domain that will be sent to clients to connect to

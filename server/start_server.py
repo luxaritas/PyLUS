@@ -18,6 +18,7 @@ from pyraknet.replicamanager import ReplicaManager
 
 from .plugin import get_derivatives, Plugin
 from cms.cms import settings as cms_settings
+from conf_manage import MainConfig
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -26,7 +27,7 @@ class Server:
     """
     Main server class
     """
-    def __init__(self, server_type: str, host: str, port: int, max_connections: int, config: dict):
+    def __init__(self, server_type: str, host: str, port: int, max_connections: int, config: MainConfig):
         self.rndispatcher = EventDispatcher()
         self.rnserver = RNServer((host, port), max_connections, b'3.25 ND1', None, self.rndispatcher)
         self.rndispatcher.add_listener(RNMessage.UserPacket, self.on_user_packet)
@@ -124,9 +125,13 @@ class Server:
 
         return None
 
-def start(config):
+
+def start(config: MainConfig):
     servers = {}
-    for srv_type, conf in config['servers'].items():
-        if conf['enabled']:
-            servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'], config)
+    # for srv_type, conf in config['servers'].items():
+    for server in config.servers:
+        if server.enabled:
+            servers[server.name] = Server(server.name, server.listen_host, server.listen_port, server.max_connections, config)
+    #     if conf['enabled']:
+    #         servers[srv_type] = Server(srv_type, conf['listen_host'], conf['listen_port'], conf['max_connections'], config)
     return servers
