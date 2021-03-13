@@ -6,8 +6,7 @@ from bitstream import WriteStream, ReadStream, Serializable, c_uint8, c_uint16, 
 from pyraknet.transports.abc import Connection
 
 from server.plugin import Plugin, Action
-from server.structs import LUHeader, Packet, CString
-from conf_manage import MainConfig
+from server.structs import Packet, CString
 
 
 class Login(Plugin):

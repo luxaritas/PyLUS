@@ -11,7 +11,7 @@ import waitress
 from cms.cms.wsgi import application as cms_app
 from django.core.management import call_command as django_manage_call
 from django.contrib.auth.models import User
-from conf_manage import MainConfig
+from util import MainConfig
 
 from server import start_server
 
@@ -23,8 +23,7 @@ def serve_cms(host, port):
 if __name__ == '__main__':
     config = MainConfig()
     config.load()
-    if not config.from_disk:
-        config.save()
+    config.save()
 
     if config.cms.enabled:
         if not config.cms.debug:

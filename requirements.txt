@@ -1,8 +1,8 @@
 git+https://github.com/lcdr/py_event_dispatcher@4e77404
 git+https://github.com/lcdr/bitstream@b3389c8
 git+https://github.com/lcdr/pyraknet@259b305
-pyyaml==5.3
 bcrypt==3.2.0
 django==2.2.13
 waitress==1.4.3
 whitenoise==5.0.1
+ruamel.yaml==0.16.13

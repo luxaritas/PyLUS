@@ -2,23 +2,17 @@
 Core server implementation and startup
 """
 
-import asyncio
 import inspect
 import logging
-import os
-import sys
-import yaml
 
 from event_dispatcher import EventDispatcher
 
 from pyraknet.server import Server as RNServer
 from pyraknet.messages import Message as RNMessage
-from pyraknet.transports.abc import Connection
 from pyraknet.replicamanager import ReplicaManager
 
 from .plugin import get_derivatives, Plugin
-from cms.cms import settings as cms_settings
-from conf_manage import MainConfig
+from util import MainConfig
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)

@@ -2,8 +2,8 @@
 Configuration loading and saving.
 """
 from pathlib import Path
-import yaml
-
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 
 GLOBAL_LISTEN_HOST = "localhost"
 GLOBAL_PUBLIC_HOST = "localhost"
@@ -15,9 +15,13 @@ class SaveLoadConfig:
     """
     A class that will automatically take any non-protected variables and allow them to be saved to and loaded from disk.
     While you could subclass this (untested), you should use the decorator instead.
+    Variables prefixed with _c_ are treated as comments for the variable that comes after the prefix.
+    Variables prefixed with _ are ignored.
     """
     def __init__(self):
         self._from_disk: bool = False
+        self._yaml = YAML(typ="rt")
+        self._yaml.indent = 4
 
     @classmethod
     def __init_subclass__(cls, path: str, **kwargs):
@@ -31,7 +35,8 @@ class SaveLoadConfig:
     def save(self):
         self.pre_save()
         file = open(self._data_path, "w")
-        yaml.safe_dump(self.to_dict(), file)
+        # self.yaml.dump(self.to_dict(), file)
+        self._yaml.dump(self._build_ruamel_map(), file)
         file.close()
         self.post_save()
 
@@ -40,7 +45,7 @@ class SaveLoadConfig:
         file_location = self._data_path
         if Path(file_location).is_file():
             file = open(file_location, "r")
-            state = yaml.safe_load(file)
+            state = self._yaml.load(file)
             file.close()
             self._from_dict(state)
             self._from_disk = True
@@ -57,6 +62,43 @@ class SaveLoadConfig:
             if key[0] != "_":
                 output_dict[key] = self.__dict__[key]
         return output_dict
+
+    def _build_ruamel_map(self) -> CommentedMap:
+        ret = CommentedMap()
+        # self._recursive_build_dict(self.__dict__, 0, ret)
+        self._recursive_build_dict(ret, self.__dict__, 0, 0)
+        # print(ret["globals"].ca.comment)
+        # ret["globals"].yaml_set_start_comment("Test")
+        # ret.yaml_set_comment_before_after_key("globals", "Before globals!", 0)
+        # ret["globals"].yaml_set_comment_before_after_key("listen_host", "Before Dinky", 4)
+        return ret
+
+    def _recursive_build_dict(self, comment_map: CommentedMap, source_dict: dict, index: int, deepness: int) -> int:
+        # If you find a way to sanely do this without going over it multiple times and not having it be recursive, be
+        # my guest.
+        cur_index = index
+        for key in source_dict:
+            if not key.startswith("_"):
+                if isinstance(source_dict[key], dict):
+                    new_map = CommentedMap()
+                    # comment_map.insert(cur_index, key, new_map, comment=source_dict.get(f"_c_{key}", None))
+                    comment_map.insert(cur_index, key, new_map)
+                    cur_index += 1
+                    # TODO: Change to walrus operator once Python 3.8+ is minimum spec.
+                    # key_comment = source_dict.get(f"_c_{key}", None)
+                    # if key_comment:
+                    #     comment_map.yaml_set_comment_before_after_key(key, key_comment, deepness * 4)
+
+                    # cur_index = self._recursive_build_dict(source_dict[key], cur_index, new_map)
+                    cur_index = self._recursive_build_dict(new_map, source_dict[key], cur_index, deepness + 1)
+                else:
+                    # comment_map.insert(cur_index, key, source_dict[key], comment=source_dict.get(f"_c_{key}", None))
+                    comment_map.insert(cur_index, key, source_dict[key])
+                    cur_index += 1
+            key_comment = source_dict.get(f"_c_{key}", None)
+            if key_comment:
+                comment_map.yaml_set_comment_before_after_key(key, key_comment, deepness * 4)
+        return cur_index
 
     def pre_save(self):
         # Decorated class should override as needed.
@@ -99,37 +141,24 @@ class BasicConfig:
     def to_dict(self) -> dict:
         output_dict = dict()
         for key in self.__dict__:
-            if key[0] != "_":
-                output_dict[key] = self.__dict__[key]
+            # if key[0] != "_":
+            output_dict[key] = self.__dict__[key]
         return output_dict
 
 
 """
-From this point down, edit to add new options or change the default values.
+From this point down, edit the __init__'s to add new options or change the default values.
 """
 
 
-@config_file(path="config.default.yml")
+@config_file(path="config.yml")
 class MainConfig:
     def __init__(self):
         self.globals = GlobalsConfig()
+        self._c_globals = "Defaults across all servers."
         self.cms = CMSConfig()
+        self._c_cms = "Django website."
         self.servers = ServersConfig()
-
-    def load(self):
-        self.pre_load()
-        if Path("config.yml").is_file():
-            self._load_from_file("config.yml")
-        elif Path("config.default.yml").is_file():
-            self._load_from_file("config.default.yml")
-        self.post_load()
-
-    def _load_from_file(self, file_location: str):
-        file = open(file_location, "r")
-        state = yaml.safe_load(file)
-        file.close()
-        self._from_dict(state)
-        self._from_disk = True
 
     def post_load(self):
         if isinstance(self.globals, dict):
@@ -144,6 +173,9 @@ class MainConfig:
         self.cms = self.cms.to_dict()
         self.servers = self.servers.to_dict()
 
+    def post_save(self):
+        self.post_load()
+
 
 class ServersConfig(BasicConfig):
     def __init__(self, state: dict = None):
@@ -151,6 +183,7 @@ class ServersConfig(BasicConfig):
         self.chat = BasicServer(2001, "chat")
         self.char = BasicServer(2003, "char")
         self.venture_explorer = BasicServer(2005, "venture_explorer")
+
         if state:
             self.from_dict(state)
 
@@ -177,6 +210,7 @@ class BasicServer(BasicConfig):
         self.public_host = GLOBAL_PUBLIC_HOST
         self.max_connections = GLOBAL_MAX_CONNECTIONS
         self.enabled = ENABLE_ALL
+
         if state:
             self.from_dict(state)
 
@@ -188,9 +222,14 @@ class BasicServer(BasicConfig):
 class GlobalsConfig(BasicConfig):
     def __init__(self, state: dict = None):
         self.listen_host = GLOBAL_LISTEN_HOST
+        self._c_listen_host = "Default IP/domain that server instances will accept incoming connections on."
         self.public_host = GLOBAL_PUBLIC_HOST
+        self._c_public_host = "Default IP/domain that will be sent to clients to connect to."
         self.max_connections = GLOBAL_MAX_CONNECTIONS
+        self._c_max_connections = "Default number of maximum connections accepted per server."
         self.enable_all = ENABLE_ALL
+        self._c_enable_all = "Whether all servers should be enabled by default."
+
         if state:
             self.from_dict(state)
 
@@ -198,17 +237,23 @@ class GlobalsConfig(BasicConfig):
 class CMSConfig(BasicConfig):
     def __init__(self, state: dict = None):
         self.enabled = ENABLE_ALL
+        self._c_enabled = "Whether to start the Django CMS when running the boot script"
         self.debug = False
+        self._c_debug = """Whether to enable Django's debug mode (DO NOT ENABLE WHEN HOSTING PUBLICLY/OUTSIDE YOUR LAN)
+When false, forever-cacheable files and compression support will be enabled in whitenoise, as
+well as..?"""
         self.secret_key = "generate"
+        self._c_secret_key = """Cryptographic key used by Django in cryptographic functions.
+`generate` will create a new secure key whenever the server starts, which is typically optimal.
+Do NOT change if you do not know how to properly generate a secure key."""
         self.listen_host = GLOBAL_LISTEN_HOST
+        self._c_listen_host = "IP/domain to accept incoming connections on."
         self.listen_port = 8080
+        self._c_listen_host = "Port to accept incoming connections on."
         self.public_host = GLOBAL_PUBLIC_HOST
+        self._c_public_host = "IP/domain that will be sent to clients to connect to."
         self.public_port = 8080
+        self._c_public_port = "Port that wil be sent to clients to connect to."
+
         if state:
             self.from_dict(state)
-
-
-
-
-
-
