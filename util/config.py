@@ -65,12 +65,7 @@ class SaveLoadConfig:
 
     def _build_ruamel_map(self) -> CommentedMap:
         ret = CommentedMap()
-        # self._recursive_build_dict(self.__dict__, 0, ret)
         self._recursive_build_dict(ret, self.__dict__, 0, 0)
-        # print(ret["globals"].ca.comment)
-        # ret["globals"].yaml_set_start_comment("Test")
-        # ret.yaml_set_comment_before_after_key("globals", "Before globals!", 0)
-        # ret["globals"].yaml_set_comment_before_after_key("listen_host", "Before Dinky", 4)
         return ret
 
     def _recursive_build_dict(self, comment_map: CommentedMap, source_dict: dict, index: int, deepness: int) -> int:
@@ -81,20 +76,14 @@ class SaveLoadConfig:
             if not key.startswith("_"):
                 if isinstance(source_dict[key], dict):
                     new_map = CommentedMap()
-                    # comment_map.insert(cur_index, key, new_map, comment=source_dict.get(f"_c_{key}", None))
                     comment_map.insert(cur_index, key, new_map)
                     cur_index += 1
-                    # TODO: Change to walrus operator once Python 3.8+ is minimum spec.
-                    # key_comment = source_dict.get(f"_c_{key}", None)
-                    # if key_comment:
-                    #     comment_map.yaml_set_comment_before_after_key(key, key_comment, deepness * 4)
-
-                    # cur_index = self._recursive_build_dict(source_dict[key], cur_index, new_map)
                     cur_index = self._recursive_build_dict(new_map, source_dict[key], cur_index, deepness + 1)
                 else:
                     # comment_map.insert(cur_index, key, source_dict[key], comment=source_dict.get(f"_c_{key}", None))
                     comment_map.insert(cur_index, key, source_dict[key])
                     cur_index += 1
+            # TODO: Change following if statement to use the walrus operator once 3.8+ becomes minimum.
             key_comment = source_dict.get(f"_c_{key}", None)
             if key_comment:
                 comment_map.yaml_set_comment_before_after_key(key, key_comment, deepness * 4)
@@ -141,8 +130,8 @@ class BasicConfig:
     def to_dict(self) -> dict:
         output_dict = dict()
         for key in self.__dict__:
-            # if key[0] != "_":
-            output_dict[key] = self.__dict__[key]
+            if not key.startswith("_") or key.startswith("_c_"):
+                output_dict[key] = self.__dict__[key]
         return output_dict
 
 
@@ -249,7 +238,7 @@ Do NOT change if you do not know how to properly generate a secure key."""
         self.listen_host = GLOBAL_LISTEN_HOST
         self._c_listen_host = "IP/domain to accept incoming connections on."
         self.listen_port = 8080
-        self._c_listen_host = "Port to accept incoming connections on."
+        self._c_listen_port = "Port to accept incoming connections on."
         self.public_host = GLOBAL_PUBLIC_HOST
         self._c_public_host = "IP/domain that will be sent to clients to connect to."
         self.public_port = 8080

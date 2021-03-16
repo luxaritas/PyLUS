@@ -62,6 +62,7 @@ target/
 
 # Custom config
 config.yml
+config.default.yml
 
 # DB
 cms/db.sqlite3
