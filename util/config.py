@@ -35,7 +35,6 @@ class SaveLoadConfig:
     def save(self):
         self.pre_save()
         file = open(self._data_path, "w")
-        # self.yaml.dump(self.to_dict(), file)
         self._yaml.dump(self._build_ruamel_map(), file)
         file.close()
         self.post_save()
@@ -80,7 +79,6 @@ class SaveLoadConfig:
                     cur_index += 1
                     cur_index = self._recursive_build_dict(new_map, source_dict[key], cur_index, deepness + 1)
                 else:
-                    # comment_map.insert(cur_index, key, source_dict[key], comment=source_dict.get(f"_c_{key}", None))
                     comment_map.insert(cur_index, key, source_dict[key])
                     cur_index += 1
             # TODO: Change following if statement to use the walrus operator once 3.8+ becomes minimum.

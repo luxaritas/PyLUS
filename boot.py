@@ -24,10 +24,6 @@ if __name__ == '__main__':
     config = MainConfig()
     config.load()
     config.save()
-    if not config.from_disk:
-        # Config contains pointers to "global" variables, forcing a save and re-loading from disk overwrites with
-        # correct values.
-        config.load()
 
     if config.cms.enabled:
         if not config.cms.debug:
