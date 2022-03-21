@@ -3,6 +3,6 @@ git+https://github.com/lcdr/bitstream@b3389c8
 git+https://github.com/lcdr/pyraknet@259b305
 bcrypt==3.2.0
 django==2.2.27
-waitress==1.4.3
+waitress==2.1.1
 whitenoise==5.0.1
 ruamel.yaml==0.16.13
